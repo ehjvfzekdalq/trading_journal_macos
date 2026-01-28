@@ -67,6 +67,42 @@ CREATE INDEX IF NOT EXISTS idx_trades_status ON trades(status);
 CREATE INDEX IF NOT EXISTS idx_trades_import_fingerprint ON trades(import_fingerprint);
 CREATE INDEX IF NOT EXISTS idx_trades_composite ON trades(status, trade_date DESC);
 
+-- API Credentials table (encrypted storage)
+CREATE TABLE IF NOT EXISTS api_credentials (
+    id TEXT PRIMARY KEY,
+    exchange TEXT NOT NULL,
+    label TEXT NOT NULL,
+    api_key TEXT NOT NULL,
+    api_secret TEXT NOT NULL,
+    passphrase TEXT,
+    is_active INTEGER NOT NULL DEFAULT 1,
+    last_sync_timestamp INTEGER,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_credentials_exchange ON api_credentials(exchange);
+CREATE INDEX IF NOT EXISTS idx_credentials_active ON api_credentials(is_active);
+
+-- API Sync History table
+CREATE TABLE IF NOT EXISTS api_sync_history (
+    id TEXT PRIMARY KEY,
+    credential_id TEXT NOT NULL,
+    exchange TEXT NOT NULL,
+    sync_type TEXT NOT NULL,
+    last_sync_timestamp INTEGER NOT NULL,
+    trades_imported INTEGER NOT NULL,
+    trades_duplicated INTEGER NOT NULL,
+    last_trade_id TEXT,
+    status TEXT NOT NULL,
+    error_message TEXT,
+    created_at INTEGER NOT NULL,
+    FOREIGN KEY (credential_id) REFERENCES api_credentials(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_sync_history_credential ON api_sync_history(credential_id);
+CREATE INDEX IF NOT EXISTS idx_sync_history_status ON api_sync_history(status);
+
 -- Initialize default settings
 INSERT OR IGNORE INTO settings (id, initial_capital, current_r_percent, default_min_rr, default_leverage, currency, created_at, updated_at)
 VALUES (1, 10000.0, 0.02, 2.0, 10, 'USD', strftime('%s', 'now'), strftime('%s', 'now'));

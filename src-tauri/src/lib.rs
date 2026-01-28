@@ -1,3 +1,4 @@
+mod api;
 mod commands;
 mod db;
 mod models;
@@ -49,6 +50,13 @@ pub fn run() {
             commands::delete_bitget_trades,
             commands::export_all_data,
             commands::import_all_data,
+            commands::save_api_credentials,
+            commands::list_api_credentials,
+            commands::test_api_credentials,
+            commands::delete_api_credentials,
+            commands::update_api_credentials_status,
+            commands::get_sync_history,
+            commands::sync_exchange_trades,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

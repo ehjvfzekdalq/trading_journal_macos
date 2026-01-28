@@ -1,22 +1,28 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { api, type Settings as SettingsType } from '../lib/api';
+import { api, type Settings as SettingsType, type ApiCredentialSafe } from '../lib/api';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
-import { Download, Upload, AlertCircle, XCircle, Trash2 } from 'lucide-react';
+import { Download, Upload, AlertCircle, XCircle, Trash2, Plus } from 'lucide-react';
 import { save, open } from '@tauri-apps/plugin-dialog';
 import { writeTextFile, readTextFile } from '@tauri-apps/plugin-fs';
+import { ExchangeCard } from '../components/ExchangeCard';
+import { ExchangeDialog } from '../components/ExchangeDialog';
 
 export default function Settings() {
   const { t } = useTranslation();
   const [settings, setSettings] = useState<SettingsType | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [credentials, setCredentials] = useState<ApiCredentialSafe[]>([]);
+  const [showExchangeDialog, setShowExchangeDialog] = useState(false);
+  const [testingCredentialId, setTestingCredentialId] = useState<string | null>(null);
 
   useEffect(() => {
     loadSettings();
+    loadCredentials();
   }, []);
 
   const loadSettings = async () => {
@@ -27,6 +33,60 @@ export default function Settings() {
       console.error('Failed to load settings:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadCredentials = async () => {
+    try {
+      console.log('Loading API credentials...');
+      const data = await api.listApiCredentials();
+      console.log('API credentials loaded:', data);
+      setCredentials(data);
+    } catch (error) {
+      console.error('Failed to load API credentials:', error);
+      alert('Failed to load credentials: ' + error);
+    }
+  };
+
+  const handleTestCredentials = async (id: string) => {
+    setTestingCredentialId(id);
+    try {
+      const isValid = await api.testApiCredentials(id);
+      if (isValid) {
+        alert('Connection successful!');
+      } else {
+        alert('Connection failed. Please check your credentials.');
+      }
+    } catch (error) {
+      console.error('Failed to test credentials:', error);
+      alert('Failed to test credentials: ' + error);
+    } finally {
+      setTestingCredentialId(null);
+    }
+  };
+
+  const handleSync = (id: string) => {
+    // TODO: Navigate to sync page or open sync dialog
+    alert('Sync functionality coming soon!');
+  };
+
+  const handleDeleteCredentials = async (id: string) => {
+    try {
+      await api.deleteApiCredentials(id);
+      await loadCredentials();
+    } catch (error) {
+      console.error('Failed to delete credentials:', error);
+      alert('Failed to delete credentials: ' + error);
+    }
+  };
+
+  const handleToggleActive = async (id: string, isActive: boolean) => {
+    try {
+      await api.updateApiCredentialsStatus(id, isActive);
+      await loadCredentials();
+    } catch (error) {
+      console.error('Failed to update credentials:', error);
+      alert('Failed to update credentials: ' + error);
     }
   };
 
@@ -255,6 +315,46 @@ export default function Settings() {
           </div>
         </CardContent>
       </Card>
+
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>Exchange Connections</CardTitle>
+            <Button onClick={() => setShowExchangeDialog(true)} size="sm">
+              <Plus className="h-4 w-4 mr-2" />
+              Add Exchange
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {credentials.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <p>No exchanges connected yet.</p>
+              <p className="text-sm mt-2">Add an exchange to automatically sync your trades.</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {credentials.map((cred) => (
+                <ExchangeCard
+                  key={cred.id}
+                  credential={cred}
+                  onTest={handleTestCredentials}
+                  onSync={handleSync}
+                  onDelete={handleDeleteCredentials}
+                  onToggleActive={handleToggleActive}
+                  isTesting={testingCredentialId === cred.id}
+                />
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <ExchangeDialog
+        open={showExchangeDialog}
+        onOpenChange={setShowExchangeDialog}
+        onSaved={loadCredentials}
+      />
 
       <Card>
         <CardHeader>

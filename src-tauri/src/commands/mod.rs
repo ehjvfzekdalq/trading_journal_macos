@@ -1,9 +1,11 @@
-pub mod trades;
+pub mod api_sync;
+pub mod import;
 pub mod settings;
 pub mod stats;
-pub mod import;
+pub mod trades;
 
-pub use trades::*;
+pub use api_sync::*;
+pub use import::*;
 pub use settings::*;
 pub use stats::*;
-pub use import::*;
+pub use trades::*;

@@ -116,6 +116,55 @@ export interface ImportResult {
   errors: string[];
 }
 
+export interface ApiCredentialSafe {
+  id: string;
+  exchange: string;
+  label: string;
+  api_key_preview: string;
+  is_active: boolean;
+  last_sync_timestamp?: number;
+  created_at: number;
+  updated_at: number;
+}
+
+export interface ApiCredentialInput {
+  id?: string;
+  exchange: string;
+  label: string;
+  api_key: string;
+  api_secret: string;
+  passphrase?: string;
+  is_active?: boolean;
+}
+
+export interface ApiSyncHistory {
+  id: string;
+  credential_id: string;
+  exchange: string;
+  sync_type: string;
+  last_sync_timestamp: number;
+  trades_imported: number;
+  trades_duplicated: number;
+  last_trade_id?: string;
+  status: string;
+  error_message?: string;
+  created_at: number;
+}
+
+export interface SyncConfig {
+  credential_id: string;
+  start_date?: number;
+  end_date?: number;
+  skip_duplicates: boolean;
+}
+
+export interface SyncResult {
+  imported: number;
+  duplicates: number;
+  errors: string[];
+  total_pnl?: number;
+}
+
 // API functions
 export const api = {
   // Settings
@@ -143,4 +192,22 @@ export const api = {
   deleteBitgetTrades: () => invoke<number>('delete_bitget_trades'),
   exportAllData: () => invoke<string>('export_all_data'),
   importAllData: (jsonData: string) => invoke<[number, number]>('import_all_data', { jsonData }),
+
+  // API Credentials
+  saveApiCredentials: (input: ApiCredentialInput) =>
+    invoke<ApiCredentialSafe>('save_api_credentials', { input }),
+  listApiCredentials: () =>
+    invoke<ApiCredentialSafe[]>('list_api_credentials'),
+  testApiCredentials: (credentialId: string) =>
+    invoke<boolean>('test_api_credentials', { credentialId }),
+  deleteApiCredentials: (credentialId: string) =>
+    invoke<void>('delete_api_credentials', { credentialId }),
+  updateApiCredentialsStatus: (credentialId: string, isActive: boolean) =>
+    invoke<void>('update_api_credentials_status', { credentialId, isActive }),
+
+  // API Sync
+  getSyncHistory: (credentialId: string) =>
+    invoke<ApiSyncHistory[]>('get_sync_history', { credentialId }),
+  syncExchangeTrades: (config: SyncConfig) =>
+    invoke<SyncResult>('sync_exchange_trades', { config }),
 };
