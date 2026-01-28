@@ -26,8 +26,11 @@ export default function Layout() {
       <aside className="w-64 bg-card border-r border-border flex flex-col">
         <div className="p-6">
           <h1 className="text-2xl font-bold text-foreground leading-tight">
-            Nemesis<br />Trading Journal
+            Nemesis
           </h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            {i18n.language === 'fr' ? 'Journal de Trading' : 'Trading Journal'}
+          </p>
         </div>
 
         <nav className="flex-1 px-3 space-y-1">

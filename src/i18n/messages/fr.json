@@ -65,7 +65,9 @@
     "trades": "trades",
     "previous": "Précédent",
     "next": "Suivant",
-    "loadingTrades": "Chargement des trades..."
+    "loadingTrades": "Chargement des trades...",
+    "dateRange": "Période",
+    "statusFilter": "Statut"
   },
   "import": {
     "title": "Importer des Trades",

@@ -8,6 +8,7 @@ import { formatCurrency } from '../lib/utils';
 import { Plus, Eye, Calendar } from 'lucide-react';
 
 type DateRange = 'all' | '7d' | '30d' | '90d' | '180d' | '365d';
+type StatusFilter = 'all' | 'OPEN' | 'WIN' | 'LOSS' | 'BE';
 
 const getDateRangeTimestamp = (range: DateRange): number | undefined => {
   if (range === 'all') return undefined;
@@ -31,17 +32,22 @@ export default function Journal() {
   const [trades, setTrades] = useState<Trade[]>([]);
   const [loading, setLoading] = useState(true);
   const [dateRange, setDateRange] = useState<DateRange>('all');
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
 
   useEffect(() => {
     loadTrades();
-  }, [dateRange]);
+  }, [dateRange, statusFilter]);
 
   const loadTrades = async () => {
     setLoading(true);
     try {
       const startDate = getDateRangeTimestamp(dateRange);
-      const filters = startDate ? { start_date: startDate } : undefined;
-      const data = await api.getTrades(filters);
+      const filters: any = {};
+
+      if (startDate) filters.start_date = startDate;
+      if (statusFilter !== 'all') filters.status = statusFilter;
+
+      const data = await api.getTrades(Object.keys(filters).length > 0 ? filters : undefined);
       setTrades(data);
     } catch (error) {
       console.error('Failed to load trades:', error);
@@ -74,6 +80,14 @@ export default function Journal() {
     { value: '365d' as DateRange, label: t('dashboard.dateRange.year') || 'Year' },
   ];
 
+  const statusOptions = [
+    { value: 'all' as StatusFilter, label: t('dashboard.dateRange.allTime') || 'All' },
+    { value: 'OPEN' as StatusFilter, label: t('common.open') || 'Open' },
+    { value: 'WIN' as StatusFilter, label: t('common.win') || 'Win' },
+    { value: 'LOSS' as StatusFilter, label: t('common.loss') || 'Loss' },
+    { value: 'BE' as StatusFilter, label: t('common.breakeven') || 'BE' },
+  ];
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -91,25 +105,52 @@ export default function Journal() {
         </Button>
       </div>
 
-      {/* Date Range Filter */}
-      <div className="flex items-center gap-2">
-        <Calendar className="h-4 w-4 text-muted-foreground" />
-        <div className="flex gap-1 border rounded-lg p-1">
-          {dateRangeOptions.map((option) => (
-            <Button
-              key={option.value}
-              variant={dateRange === option.value ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => setDateRange(option.value)}
-              className="h-7 text-xs"
-            >
-              {option.label}
-            </Button>
-          ))}
+      {/* Filters */}
+      <div className="space-y-3">
+        {/* Date Range Filter */}
+        <div className="flex items-center gap-2">
+          <Calendar className="h-4 w-4 text-muted-foreground" />
+          <span className="text-xs text-muted-foreground min-w-[60px]">
+            {t('journal.dateRange') || 'Period'}:
+          </span>
+          <div className="flex gap-1 border rounded-lg p-1">
+            {dateRangeOptions.map((option) => (
+              <Button
+                key={option.value}
+                variant={dateRange === option.value ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setDateRange(option.value)}
+                className="h-7 text-xs"
+              >
+                {option.label}
+              </Button>
+            ))}
+          </div>
         </div>
-        <span className="text-sm text-muted-foreground ml-2">
-          {trades.length} {t('journal.trades') || 'trades'}
-        </span>
+
+        {/* Status Filter */}
+        <div className="flex items-center gap-2">
+          <div className="h-4 w-4" /> {/* Spacer for alignment */}
+          <span className="text-xs text-muted-foreground min-w-[60px]">
+            {t('common.status') || 'Status'}:
+          </span>
+          <div className="flex gap-1 border rounded-lg p-1">
+            {statusOptions.map((option) => (
+              <Button
+                key={option.value}
+                variant={statusFilter === option.value ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setStatusFilter(option.value)}
+                className="h-7 text-xs"
+              >
+                {option.label}
+              </Button>
+            ))}
+          </div>
+          <span className="text-sm text-muted-foreground ml-auto">
+            {trades.length} {t('journal.trades') || 'trades'}
+          </span>
+        </div>
       </div>
 
       <div className="space-y-4">
