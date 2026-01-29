@@ -48,8 +48,4 @@ impl From<serde_json::Error> for ApiError {
     }
 }
 
-impl From<aes_gcm::Error> for ApiError {
-    fn from(err: aes_gcm::Error) -> Self {
-        ApiError::EncryptionError(err.to_string())
-    }
-}
+// Removed aes_gcm error conversion - now using system keychain

@@ -8,7 +8,7 @@ use crate::api::{
     bitget::BitgetClient,
     blofin::BlofinClient,
     client::{ExchangeClient, FetchTradesRequest},
-    credentials::{encrypt_credential, decrypt_credential},
+    credentials::{store_api_key, store_api_secret, store_passphrase, retrieve_api_key, retrieve_api_secret, retrieve_passphrase, delete_credentials},
 };
 use chrono::Utc;
 use uuid::Uuid;
@@ -21,18 +21,21 @@ pub async fn save_api_credentials(
 ) -> Result<ApiCredentialSafe, String> {
     let conn = db.conn.lock().map_err(|e| e.to_string())?;
 
-    // Encrypt credentials
-    let encrypted_key = encrypt_credential(&input.api_key).map_err(|e| e.to_string())?;
-    let encrypted_secret = encrypt_credential(&input.api_secret).map_err(|e| e.to_string())?;
-    let encrypted_passphrase = input.passphrase
-        .as_ref()
-        .map(|p| encrypt_credential(p))
-        .transpose()
-        .map_err(|e| e.to_string())?;
-
     let now = Utc::now().timestamp();
     let id = input.id.unwrap_or_else(|| Uuid::new_v4().to_string());
     let is_active = input.is_active.unwrap_or(true);
+
+    // Store credentials in system keychain
+    store_api_key(&id, &input.api_key).map_err(|e| e.to_string())?;
+    store_api_secret(&id, &input.api_secret).map_err(|e| e.to_string())?;
+    if let Some(ref passphrase) = input.passphrase {
+        store_passphrase(&id, passphrase).map_err(|e| e.to_string())?;
+    }
+
+    // Store placeholder in database to maintain schema compatibility
+    let placeholder_key = format!("KEYCHAIN:{}", id);
+    let placeholder_secret = format!("KEYCHAIN:{}", id);
+    let placeholder_passphrase = input.passphrase.as_ref().map(|_| format!("KEYCHAIN:{}", id));
 
     // Check if updating existing
     let exists: bool = conn
@@ -54,9 +57,9 @@ pub async fn save_api_credentials(
             rusqlite::params![
                 &input.exchange,
                 &input.label,
-                &encrypted_key,
-                &encrypted_secret,
-                &encrypted_passphrase,
+                &placeholder_key,
+                &placeholder_secret,
+                &placeholder_passphrase,
                 is_active as i32,
                 now,
                 &id,
@@ -73,9 +76,9 @@ pub async fn save_api_credentials(
                 &id,
                 &input.exchange,
                 &input.label,
-                &encrypted_key,
-                &encrypted_secret,
-                &encrypted_passphrase,
+                &placeholder_key,
+                &placeholder_secret,
+                &placeholder_passphrase,
                 is_active as i32,
                 now,
                 now,
@@ -115,11 +118,12 @@ pub async fn list_api_credentials(
 
     let credentials_iter = stmt
         .query_map([], |row| {
-            let encrypted_key: String = row.get(3)?;
-            let api_key = decrypt_credential(&encrypted_key).unwrap_or_default();
+            let id: String = row.get(0)?;
+            // Retrieve from keychain instead of decrypting from database
+            let api_key = retrieve_api_key(&id).unwrap_or_default();
 
             Ok(ApiCredentialSafe {
-                id: row.get(0)?,
+                id,
                 exchange: row.get(1)?,
                 label: row.get(2)?,
                 api_key_preview: ApiCredential::create_preview(&api_key),
@@ -145,24 +149,19 @@ pub async fn test_api_credentials(
     let (exchange, api_key, api_secret, passphrase) = {
         let conn = db.conn.lock().map_err(|e| e.to_string())?;
 
-        // Fetch credential
-        let (exchange, encrypted_key, encrypted_secret, encrypted_passphrase): (String, String, String, Option<String>) = conn
+        // Fetch exchange type
+        let exchange: String = conn
             .query_row(
-                "SELECT exchange, api_key, api_secret, passphrase FROM api_credentials WHERE id = ?",
+                "SELECT exchange FROM api_credentials WHERE id = ?",
                 [&credential_id],
-                |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?)),
+                |row| row.get(0),
             )
             .map_err(|e| format!("Credential not found: {}", e))?;
 
-        // Decrypt
-        let api_key = decrypt_credential(&encrypted_key).map_err(|e| e.to_string())?;
-        let api_secret = decrypt_credential(&encrypted_secret).map_err(|e| e.to_string())?;
-        let passphrase = encrypted_passphrase
-            .as_ref()
-            .map(|p| decrypt_credential(p))
-            .transpose()
-            .map_err(|e| e.to_string())?
-            .unwrap_or_default();
+        // Retrieve credentials from system keychain
+        let api_key = retrieve_api_key(&credential_id).map_err(|e| e.to_string())?;
+        let api_secret = retrieve_api_secret(&credential_id).map_err(|e| e.to_string())?;
+        let passphrase = retrieve_passphrase(&credential_id).unwrap_or_default();
 
         (exchange, api_key, api_secret, passphrase)
     }; // conn is dropped here
@@ -189,6 +188,10 @@ pub async fn delete_api_credentials(
     db: State<'_, Database>,
     credential_id: String,
 ) -> Result<(), String> {
+    // Delete from system keychain first
+    delete_credentials(&credential_id).map_err(|e| e.to_string())?;
+
+    // Then delete from database
     let conn = db.conn.lock().map_err(|e| e.to_string())?;
 
     conn.execute(
@@ -273,11 +276,11 @@ pub async fn sync_exchange_trades(
         let conn = db.conn.lock().map_err(|e| e.to_string())?;
 
         // Get credential
-        let (exchange, encrypted_key, encrypted_secret, encrypted_passphrase): (String, String, String, Option<String>) = conn
+        let exchange: String = conn
             .query_row(
-                "SELECT exchange, api_key, api_secret, passphrase FROM api_credentials WHERE id = ?",
+                "SELECT exchange FROM api_credentials WHERE id = ?",
                 [&config.credential_id],
-                |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?)),
+                |row| row.get(0),
             )
             .map_err(|e| format!("Credential not found: {}", e))?;
 
@@ -290,15 +293,10 @@ pub async fn sync_exchange_trades(
             )
             .map_err(|e| format!("Failed to load settings: {}", e))?;
 
-        // Decrypt
-        let api_key = decrypt_credential(&encrypted_key).map_err(|e| e.to_string())?;
-        let api_secret = decrypt_credential(&encrypted_secret).map_err(|e| e.to_string())?;
-        let passphrase = encrypted_passphrase
-            .as_ref()
-            .map(|p| decrypt_credential(p))
-            .transpose()
-            .map_err(|e| e.to_string())?
-            .unwrap_or_default();
+        // Retrieve credentials from system keychain
+        let api_key = retrieve_api_key(&config.credential_id).map_err(|e| e.to_string())?;
+        let api_secret = retrieve_api_secret(&config.credential_id).map_err(|e| e.to_string())?;
+        let passphrase = retrieve_passphrase(&config.credential_id).unwrap_or_default();
 
         (exchange, api_key, api_secret, passphrase, portfolio, r)
     };
@@ -332,7 +330,10 @@ pub async fn sync_exchange_trades(
     let mut errors = Vec::new();
     let mut total_pnl = 0.0;
 
-    let conn = db.conn.lock().map_err(|e| e.to_string())?;
+    let mut conn = db.conn.lock().map_err(|e| e.to_string())?;
+
+    // Wrap the entire sync operation in a transaction
+    let tx = conn.transaction().map_err(|e| e.to_string())?;
 
     for raw_trade in raw_trades {
         // Generate fingerprint
@@ -349,7 +350,7 @@ pub async fn sync_exchange_trades(
 
         // Check for duplicate
         if config.skip_duplicates {
-            let exists: bool = conn
+            let exists: bool = tx
                 .query_row(
                     "SELECT COUNT(*) > 0 FROM trades WHERE import_fingerprint = ?",
                     [&fingerprint],
@@ -366,8 +367,8 @@ pub async fn sync_exchange_trades(
         // Map to Trade model
         match map_raw_trade_to_trade(&raw_trade, &exchange, portfolio_value, r_percent, &fingerprint) {
             Ok(trade) => {
-                // Insert trade
-                if let Err(e) = insert_trade(&conn, &trade) {
+                // Insert trade using transaction
+                if let Err(e) = insert_trade_in_tx(&tx, &trade) {
                     errors.push(format!("Failed to insert trade {}: {}", raw_trade.exchange_trade_id, e));
                 } else {
                     imported += 1;
@@ -387,7 +388,7 @@ pub async fn sync_exchange_trades(
     let sync_id = Uuid::new_v4().to_string();
     let status = if errors.is_empty() { "success" } else if imported > 0 { "partial" } else { "failed" };
 
-    conn.execute(
+    tx.execute(
         "INSERT INTO api_sync_history (id, credential_id, exchange, sync_type, last_sync_timestamp, trades_imported, trades_duplicated, status, error_message, created_at)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         rusqlite::params![
@@ -406,11 +407,14 @@ pub async fn sync_exchange_trades(
     .map_err(|e| e.to_string())?;
 
     // Update last_sync_timestamp on credential
-    conn.execute(
+    tx.execute(
         "UPDATE api_credentials SET last_sync_timestamp = ?, updated_at = ? WHERE id = ?",
         rusqlite::params![now, now, &config.credential_id],
     )
     .map_err(|e| e.to_string())?;
+
+    // Commit the transaction
+    tx.commit().map_err(|e| e.to_string())?;
 
     Ok(SyncResult {
         imported,
@@ -548,6 +552,61 @@ fn map_raw_trade_to_trade(
 /// Insert trade into database
 fn insert_trade(conn: &rusqlite::Connection, trade: &Trade) -> Result<(), rusqlite::Error> {
     conn.execute(
+        "INSERT INTO trades (
+            id, pair, exchange, analysis_date, trade_date, status,
+            portfolio_value, r_percent, min_rr,
+            planned_pe, planned_sl, leverage, planned_tps,
+            position_type, one_r, margin, position_size, quantity, planned_weighted_rr,
+            effective_pe, close_date, exits,
+            effective_weighted_rr, total_pnl, pnl_in_r,
+            notes, import_fingerprint, created_at, updated_at
+        ) VALUES (
+            ?, ?, ?, ?, ?, ?,
+            ?, ?, ?,
+            ?, ?, ?, ?,
+            ?, ?, ?, ?, ?, ?,
+            ?, ?, ?,
+            ?, ?, ?,
+            ?, ?, ?, ?
+        )",
+        rusqlite::params![
+            trade.id,
+            trade.pair,
+            trade.exchange,
+            trade.analysis_date,
+            trade.trade_date,
+            trade.status,
+            trade.portfolio_value,
+            trade.r_percent,
+            trade.min_rr,
+            trade.planned_pe,
+            trade.planned_sl,
+            trade.leverage,
+            trade.planned_tps,
+            trade.position_type,
+            trade.one_r,
+            trade.margin,
+            trade.position_size,
+            trade.quantity,
+            trade.planned_weighted_rr,
+            trade.effective_pe,
+            trade.close_date,
+            trade.exits,
+            trade.effective_weighted_rr,
+            trade.total_pnl,
+            trade.pnl_in_r,
+            trade.notes,
+            trade.import_fingerprint,
+            trade.created_at,
+            trade.updated_at,
+        ],
+    )?;
+    Ok(())
+}
+
+/// Insert trade into database within a transaction
+fn insert_trade_in_tx(tx: &rusqlite::Transaction, trade: &Trade) -> Result<(), rusqlite::Error> {
+    tx.execute(
         "INSERT INTO trades (
             id, pair, exchange, analysis_date, trade_date, status,
             portfolio_value, r_percent, min_rr,
