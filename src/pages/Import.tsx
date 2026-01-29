@@ -1,12 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
-import { Label } from '../components/ui/label';
 import { api, type ImportPreview, type ImportResult } from '../lib/api';
 import { formatCurrency } from '../lib/utils';
-import { ArrowLeft, Upload, AlertCircle, CheckCircle2, XCircle } from 'lucide-react';
+import { ArrowLeft, Upload, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { HelpBadge } from '../components/HelpBadge';
 import { open } from '@tauri-apps/plugin-dialog';
 import { getCurrentWindow } from '@tauri-apps/api/window';
@@ -14,9 +12,20 @@ import { ConfirmDialog } from '../components/ConfirmDialog';
 import { ErrorDialog } from '../components/ErrorDialog';
 import { ImportResultDialog } from '../components/ImportResultDialog';
 
+// Type definitions for Tauri file drop events
+interface FileDropPayload {
+  type: 'hover' | 'drop' | 'cancel';
+  paths?: string[];
+}
+
+interface FileDropEvent {
+  payload: FileDropPayload;
+}
+
+type UnlistenFn = () => void;
+
 export default function Import() {
   const navigate = useNavigate();
-  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [previews, setPreviews] = useState<ImportPreview[]>([]);
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
@@ -38,7 +47,10 @@ export default function Import() {
 
     const setupFileDrop = async () => {
       try {
-        const unlisten = await (appWindow as any).onFileDropEvent(async (event: any) => {
+        // Tauri's onFileDropEvent is not fully typed in @tauri-apps/api v2, so we use a type assertion
+        const unlisten = await (appWindow as typeof appWindow & {
+          onFileDropEvent: (handler: (event: FileDropEvent) => void | Promise<void>) => Promise<UnlistenFn>
+        }).onFileDropEvent(async (event: FileDropEvent) => {
           if (event.payload.type === 'hover') {
             setIsDragging(true);
           } else if (event.payload.type === 'drop') {
