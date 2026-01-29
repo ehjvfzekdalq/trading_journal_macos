@@ -33,11 +33,12 @@ export default function Import() {
   // Set up Tauri file drop listener
   useEffect(() => {
     const appWindow = getCurrentWindow();
-    let unlisten: (() => void) | undefined;
+    let unlistenFn: (() => void) | undefined;
+    let isMounted = true;
 
     const setupFileDrop = async () => {
       try {
-        unlisten = await (appWindow as any).onFileDropEvent(async (event: any) => {
+        const unlisten = await (appWindow as any).onFileDropEvent(async (event: any) => {
           if (event.payload.type === 'hover') {
             setIsDragging(true);
           } else if (event.payload.type === 'drop') {
@@ -62,6 +63,14 @@ export default function Import() {
             setIsDragging(false);
           }
         });
+
+        // Only store the unlisten function if component is still mounted
+        if (isMounted) {
+          unlistenFn = unlisten;
+        } else {
+          // Component already unmounted, clean up immediately
+          unlisten();
+        }
       } catch (error) {
         console.error('Failed to set up file drop listener:', error);
       }
@@ -70,8 +79,9 @@ export default function Import() {
     setupFileDrop();
 
     return () => {
-      if (unlisten) {
-        unlisten();
+      isMounted = false;
+      if (unlistenFn) {
+        unlistenFn();
       }
     };
   }, []);

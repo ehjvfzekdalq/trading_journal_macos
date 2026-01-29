@@ -34,58 +34,58 @@ pub async fn get_dashboard_stats(
 ) -> Result<DashboardStats, String> {
     let conn = db.conn.lock().map_err(|e| e.to_string())?;
 
-    // Build date filter
-    let date_filter = match date_range.as_deref() {
+    // Calculate date threshold based on range
+    let date_threshold = match date_range.as_deref() {
         Some("today") => {
-            let today_start = chrono::Utc::now().date_naive().and_hms_opt(0, 0, 0).unwrap().and_utc().timestamp();
-            format!("AND close_date >= {}", today_start)
+            Some(chrono::Utc::now().date_naive().and_hms_opt(0, 0, 0).unwrap().and_utc().timestamp())
         },
         Some("week") => {
-            let week_ago = chrono::Utc::now().timestamp() - (7 * 24 * 60 * 60);
-            format!("AND close_date >= {}", week_ago)
+            Some(chrono::Utc::now().timestamp() - (7 * 24 * 60 * 60))
         },
         Some("month") => {
-            let month_ago = chrono::Utc::now().timestamp() - (30 * 24 * 60 * 60);
-            format!("AND close_date >= {}", month_ago)
+            Some(chrono::Utc::now().timestamp() - (30 * 24 * 60 * 60))
         },
         Some("3months") => {
-            let three_months_ago = chrono::Utc::now().timestamp() - (90 * 24 * 60 * 60);
-            format!("AND close_date >= {}", three_months_ago)
+            Some(chrono::Utc::now().timestamp() - (90 * 24 * 60 * 60))
         },
         Some("6months") => {
-            let six_months_ago = chrono::Utc::now().timestamp() - (180 * 24 * 60 * 60);
-            format!("AND close_date >= {}", six_months_ago)
+            Some(chrono::Utc::now().timestamp() - (180 * 24 * 60 * 60))
         },
         Some("year") => {
-            let year_ago = chrono::Utc::now().timestamp() - (365 * 24 * 60 * 60);
-            format!("AND close_date >= {}", year_ago)
+            Some(chrono::Utc::now().timestamp() - (365 * 24 * 60 * 60))
         },
-        _ => String::new(),
+        _ => None,
+    };
+
+    // Build filter clause and params
+    let (date_filter, date_params): (&str, Vec<i64>) = match date_threshold {
+        Some(threshold) => ("AND close_date >= ?", vec![threshold]),
+        None => ("", vec![]),
     };
 
     // Total trades
     let total_trades: i32 = conn.query_row(
         &format!("SELECT COUNT(*) FROM trades WHERE 1=1 {}", date_filter),
-        [],
+        rusqlite::params_from_iter(date_params.iter()),
         |row| row.get(0),
     ).unwrap_or(0);
 
     // Status counts
     let wins: i32 = conn.query_row(
         &format!("SELECT COUNT(*) FROM trades WHERE status = 'WIN' {}", date_filter),
-        [],
+        rusqlite::params_from_iter(date_params.iter()),
         |row| row.get(0),
     ).unwrap_or(0);
 
     let losses: i32 = conn.query_row(
         &format!("SELECT COUNT(*) FROM trades WHERE status = 'LOSS' {}", date_filter),
-        [],
+        rusqlite::params_from_iter(date_params.iter()),
         |row| row.get(0),
     ).unwrap_or(0);
 
     let breakevens: i32 = conn.query_row(
         &format!("SELECT COUNT(*) FROM trades WHERE status = 'BE' {}", date_filter),
-        [],
+        rusqlite::params_from_iter(date_params.iter()),
         |row| row.get(0),
     ).unwrap_or(0);
 
@@ -106,21 +106,21 @@ pub async fn get_dashboard_stats(
     // Total P&L
     let total_pnl: f64 = conn.query_row(
         &format!("SELECT COALESCE(SUM(total_pnl), 0.0) FROM trades WHERE total_pnl IS NOT NULL {}", date_filter),
-        [],
+        rusqlite::params_from_iter(date_params.iter()),
         |row| row.get(0),
     ).unwrap_or(0.0);
 
     // Gross profit
     let gross_profit: f64 = conn.query_row(
         &format!("SELECT COALESCE(SUM(total_pnl), 0.0) FROM trades WHERE total_pnl > 0 {}", date_filter),
-        [],
+        rusqlite::params_from_iter(date_params.iter()),
         |row| row.get(0),
     ).unwrap_or(0.0);
 
     // Gross loss
     let gross_loss: f64 = conn.query_row(
         &format!("SELECT COALESCE(ABS(SUM(total_pnl)), 0.0) FROM trades WHERE total_pnl < 0 {}", date_filter),
-        [],
+        rusqlite::params_from_iter(date_params.iter()),
         |row| row.get(0),
     ).unwrap_or(0.0);
 
@@ -136,21 +136,21 @@ pub async fn get_dashboard_stats(
     // Average effective RR
     let avg_effective_rr: f64 = conn.query_row(
         &format!("SELECT COALESCE(AVG(effective_weighted_rr), 0.0) FROM trades WHERE effective_weighted_rr IS NOT NULL {}", date_filter),
-        [],
+        rusqlite::params_from_iter(date_params.iter()),
         |row| row.get(0),
     ).unwrap_or(0.0);
 
     // Best trade
     let best_trade: f64 = conn.query_row(
         &format!("SELECT COALESCE(MAX(total_pnl), 0.0) FROM trades WHERE total_pnl IS NOT NULL {}", date_filter),
-        [],
+        rusqlite::params_from_iter(date_params.iter()),
         |row| row.get(0),
     ).unwrap_or(0.0);
 
     // Worst trade
     let worst_trade: f64 = conn.query_row(
         &format!("SELECT COALESCE(MIN(total_pnl), 0.0) FROM trades WHERE total_pnl IS NOT NULL {}", date_filter),
-        [],
+        rusqlite::params_from_iter(date_params.iter()),
         |row| row.get(0),
     ).unwrap_or(0.0);
 
@@ -178,33 +178,33 @@ pub async fn get_equity_curve(
 ) -> Result<Vec<EquityCurvePoint>, String> {
     let conn = db.conn.lock().map_err(|e| e.to_string())?;
 
-    // Build date filter
-    let date_filter = match date_range.as_deref() {
+    // Calculate date threshold based on range
+    let date_threshold = match date_range.as_deref() {
         Some("today") => {
-            let today_start = chrono::Utc::now().date_naive().and_hms_opt(0, 0, 0).unwrap().and_utc().timestamp();
-            format!("AND close_date >= {}", today_start)
+            Some(chrono::Utc::now().date_naive().and_hms_opt(0, 0, 0).unwrap().and_utc().timestamp())
         },
         Some("week") => {
-            let week_ago = chrono::Utc::now().timestamp() - (7 * 24 * 60 * 60);
-            format!("AND close_date >= {}", week_ago)
+            Some(chrono::Utc::now().timestamp() - (7 * 24 * 60 * 60))
         },
         Some("month") => {
-            let month_ago = chrono::Utc::now().timestamp() - (30 * 24 * 60 * 60);
-            format!("AND close_date >= {}", month_ago)
+            Some(chrono::Utc::now().timestamp() - (30 * 24 * 60 * 60))
         },
         Some("3months") => {
-            let three_months_ago = chrono::Utc::now().timestamp() - (90 * 24 * 60 * 60);
-            format!("AND close_date >= {}", three_months_ago)
+            Some(chrono::Utc::now().timestamp() - (90 * 24 * 60 * 60))
         },
         Some("6months") => {
-            let six_months_ago = chrono::Utc::now().timestamp() - (180 * 24 * 60 * 60);
-            format!("AND close_date >= {}", six_months_ago)
+            Some(chrono::Utc::now().timestamp() - (180 * 24 * 60 * 60))
         },
         Some("year") => {
-            let year_ago = chrono::Utc::now().timestamp() - (365 * 24 * 60 * 60);
-            format!("AND close_date >= {}", year_ago)
+            Some(chrono::Utc::now().timestamp() - (365 * 24 * 60 * 60))
         },
-        _ => String::new(),
+        _ => None,
+    };
+
+    // Build filter clause and params
+    let (date_filter, date_params): (&str, Vec<i64>) = match date_threshold {
+        Some(threshold) => ("AND close_date >= ?", vec![threshold]),
+        None => ("", vec![]),
     };
 
     // Query all closed trades with close_date
@@ -219,7 +219,7 @@ pub async fn get_equity_curve(
         date_filter
     )).map_err(|e| e.to_string())?;
 
-    let trades = stmt.query_map([], |row| {
+    let trades = stmt.query_map(rusqlite::params_from_iter(date_params.iter()), |row| {
         Ok((
             row.get::<_, i64>(0)?,
             row.get::<_, f64>(1)?,

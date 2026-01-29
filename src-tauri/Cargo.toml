@@ -43,7 +43,7 @@ default = ["custom-protocol"]
 custom-protocol = ["tauri/custom-protocol"]
 
 [profile.release]
-strip = true        # Strip debug symbols for smaller binary
-opt-level = "z"     # Optimize for size
-lto = true          # Link-time optimization
-codegen-units = 1   # Better optimization (slower compile, smaller binary)
+strip = false       # Keep symbols for crash reports and debugging
+opt-level = 3       # Optimize for performance (standard release optimization)
+lto = "thin"        # Thin LTO - faster builds with similar benefits
+codegen-units = 16  # Better parallelization for faster builds

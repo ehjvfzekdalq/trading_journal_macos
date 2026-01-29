@@ -3,28 +3,10 @@ import { useTranslation } from 'react-i18next';
 import { api, type Trade, type DashboardStats, type EquityCurvePoint } from '../lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
-import { formatCurrency, formatPercent } from '../lib/utils';
+import { formatCurrency, formatPercent, getDateRangeTimestamp, type DateRange } from '../lib/utils';
 import { TrendingUp, TrendingDown, DollarSign, BarChart3, Calendar } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { HelpBadge } from '../components/HelpBadge';
-
-type DateRange = 'all' | '7d' | '30d' | '90d' | '180d' | '365d';
-
-const getDateRangeTimestamp = (range: DateRange): number | undefined => {
-  if (range === 'all') return undefined;
-
-  const now = Date.now();
-  const day = 24 * 60 * 60 * 1000;
-
-  switch (range) {
-    case '7d': return Math.floor((now - 7 * day) / 1000);
-    case '30d': return Math.floor((now - 30 * day) / 1000);
-    case '90d': return Math.floor((now - 90 * day) / 1000);
-    case '180d': return Math.floor((now - 180 * day) / 1000);
-    case '365d': return Math.floor((now - 365 * day) / 1000);
-    default: return undefined;
-  }
-};
 
 export default function Dashboard() {
   const { t } = useTranslation();

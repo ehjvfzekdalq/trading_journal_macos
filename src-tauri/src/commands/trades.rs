@@ -12,21 +12,26 @@ pub async fn get_trades(
 
     let mut query = String::from("SELECT * FROM trades WHERE 1=1");
     let mut conditions = Vec::new();
+    let mut params: Vec<Box<dyn rusqlite::ToSql>> = Vec::new();
 
     if let Some(f) = &filters {
         if let Some(status) = &f.status {
             if status != "all" {
-                conditions.push(format!("status = '{}'", status));
+                conditions.push("status = ?");
+                params.push(Box::new(status.clone()));
             }
         }
         if let Some(pair) = &f.pair {
-            conditions.push(format!("pair LIKE '%{}%'", pair));
+            conditions.push("pair LIKE ?");
+            params.push(Box::new(format!("%{}%", pair)));
         }
         if let Some(start_date) = f.start_date {
-            conditions.push(format!("trade_date >= {}", start_date));
+            conditions.push("trade_date >= ?");
+            params.push(Box::new(start_date));
         }
         if let Some(end_date) = f.end_date {
-            conditions.push(format!("trade_date <= {}", end_date));
+            conditions.push("trade_date <= ?");
+            params.push(Box::new(end_date));
         }
     }
 
@@ -39,12 +44,15 @@ pub async fn get_trades(
     if let Some(f) = &filters {
         if let (Some(page), Some(limit)) = (f.page, f.limit) {
             let offset = (page - 1) * limit;
-            query.push_str(&format!(" LIMIT {} OFFSET {}", limit, offset));
+            query.push_str(" LIMIT ? OFFSET ?");
+            params.push(Box::new(limit));
+            params.push(Box::new(offset));
         }
     }
 
+    let param_refs: Vec<&dyn rusqlite::ToSql> = params.iter().map(|p| p.as_ref()).collect();
     let mut stmt = conn.prepare(&query).map_err(|e| e.to_string())?;
-    let trades_iter = stmt.query_map([], |row| {
+    let trades_iter = stmt.query_map(param_refs.as_slice(), |row| {
         Ok(Trade {
             id: row.get(0)?,
             pair: row.get(1)?,
@@ -138,7 +146,7 @@ pub async fn create_trade(
     let id = {
         let conn = db.conn.lock().map_err(|e| e.to_string())?;
 
-        let id = format!("TRADE-{}-{}", Utc::now().timestamp_millis(), uuid::Uuid::new_v4().to_string().split('-').next().unwrap());
+        let id = format!("TRADE-{}-{}", Utc::now().timestamp_millis(), uuid::Uuid::new_v4().to_string());
         let now = Utc::now().timestamp();
 
         conn.execute(
@@ -241,7 +249,7 @@ pub async fn duplicate_trade(
     let new_id = {
         let conn = db.conn.lock().map_err(|e| e.to_string())?;
 
-        let new_id = format!("TRADE-{}-{}", Utc::now().timestamp_millis(), uuid::Uuid::new_v4().to_string().split('-').next().unwrap());
+        let new_id = format!("TRADE-{}-{}", Utc::now().timestamp_millis(), uuid::Uuid::new_v4().to_string());
         let now = Utc::now().timestamp();
 
         // Copy trade but reset to OPEN status and clear execution data

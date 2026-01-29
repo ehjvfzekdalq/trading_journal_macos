@@ -6,28 +6,11 @@ import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
 import { Input } from '../components/ui/input';
 import { Badge } from '../components/ui/badge';
-import { formatCurrency } from '../lib/utils';
+import { formatCurrency, getDateRangeTimestamp, type DateRange } from '../lib/utils';
 import { Plus, Eye, Calendar, Search } from 'lucide-react';
 import { HelpBadge } from '../components/HelpBadge';
 
-type DateRange = 'all' | '7d' | '30d' | '90d' | '180d' | '365d';
 type StatusFilter = 'all' | 'OPEN' | 'WIN' | 'LOSS' | 'BE';
-
-const getDateRangeTimestamp = (range: DateRange): number | undefined => {
-  if (range === 'all') return undefined;
-
-  const now = Date.now();
-  const day = 24 * 60 * 60 * 1000;
-
-  switch (range) {
-    case '7d': return Math.floor((now - 7 * day) / 1000);
-    case '30d': return Math.floor((now - 30 * day) / 1000);
-    case '90d': return Math.floor((now - 90 * day) / 1000);
-    case '180d': return Math.floor((now - 180 * day) / 1000);
-    case '365d': return Math.floor((now - 365 * day) / 1000);
-    default: return undefined;
-  }
-};
 
 export default function Journal() {
   const navigate = useNavigate();

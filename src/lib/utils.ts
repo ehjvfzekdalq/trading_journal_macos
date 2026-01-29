@@ -98,3 +98,29 @@ export function downloadCSV(csv: string, filename: string): void {
   link.click();
   URL.revokeObjectURL(url);
 }
+
+/**
+ * Date range type for filtering trades
+ */
+export type DateRange = 'all' | '7d' | '30d' | '90d' | '180d' | '365d';
+
+/**
+ * Convert date range to Unix timestamp (seconds)
+ * @param range - The date range to convert
+ * @returns Unix timestamp in seconds, or undefined for 'all'
+ */
+export function getDateRangeTimestamp(range: DateRange): number | undefined {
+  if (range === 'all') return undefined;
+
+  const now = Date.now();
+  const day = 24 * 60 * 60 * 1000;
+
+  switch (range) {
+    case '7d': return Math.floor((now - 7 * day) / 1000);
+    case '30d': return Math.floor((now - 30 * day) / 1000);
+    case '90d': return Math.floor((now - 90 * day) / 1000);
+    case '180d': return Math.floor((now - 180 * day) / 1000);
+    case '365d': return Math.floor((now - 365 * day) / 1000);
+    default: return undefined;
+  }
+}

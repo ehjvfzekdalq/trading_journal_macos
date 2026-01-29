@@ -23,7 +23,6 @@
     "@tauri-apps/plugin-fs": "^2.4.5",
     "@tauri-apps/plugin-notification": "^2.0.0",
     "class-variance-authority": "^0.7.1",
-    "clear": "^0.1.0",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "i18next": "^23.10.0",
