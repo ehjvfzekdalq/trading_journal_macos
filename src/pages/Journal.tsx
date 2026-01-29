@@ -5,6 +5,7 @@ import { api, type Trade } from '../lib/api';
 import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
 import { Input } from '../components/ui/input';
+import { Badge } from '../components/ui/badge';
 import { formatCurrency } from '../lib/utils';
 import { Plus, Eye, Calendar, Search } from 'lucide-react';
 
@@ -57,17 +58,6 @@ export default function Journal() {
       console.error('Failed to load trades:', error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleDelete = async (id: string) => {
-    if (confirm('Are you sure you want to delete this trade?')) {
-      try {
-        await api.deleteTrade(id);
-        setTrades(trades.filter(t => t.id !== id));
-      } catch (error) {
-        console.error('Failed to delete trade:', error);
-      }
     }
   };
 
@@ -214,52 +204,68 @@ export default function Journal() {
             </CardContent>
           </Card>
         ) : (
-          filteredTrades.map(trade => (
-            <Card key={trade.id}>
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-1">
-                    <h3 className="font-semibold">{trade.pair}</h3>
-                    <div className="flex gap-4 text-sm text-muted-foreground">
-                      <span>{trade.exchange}</span>
-                      <span>{new Date(trade.trade_date * 1000).toLocaleDateString()}</span>
-                      <span className={
-                        trade.status === 'WIN' ? 'text-success' :
-                        trade.status === 'LOSS' ? 'text-destructive' :
-                        ''
-                      }>
-                        {trade.status}
-                      </span>
+          <Card>
+            <CardContent className="p-0">
+              <div className="divide-y">
+                {filteredTrades.map(trade => (
+                  <div
+                    key={trade.id}
+                    className="flex items-center gap-4 p-3 hover:bg-accent/50 transition-colors cursor-pointer"
+                    onClick={() => navigate(`/journal/${trade.id}`)}
+                  >
+                    {/* Pair */}
+                    <div className="font-semibold min-w-[120px]">
+                      {trade.pair}
                     </div>
-                    {trade.total_pnl && (
-                      <div className={`text-lg font-semibold ${
-                        trade.total_pnl >= 0 ? 'text-success' : 'text-destructive'
-                      }`}>
-                        {formatCurrency(trade.total_pnl)}
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex gap-2">
+
+                    {/* Exchange */}
+                    <div className="text-sm text-muted-foreground min-w-[100px]">
+                      {trade.exchange}
+                    </div>
+
+                    {/* Date */}
+                    <div className="text-sm text-muted-foreground min-w-[100px]">
+                      {new Date(trade.trade_date * 1000).toLocaleDateString()}
+                    </div>
+
+                    {/* Status */}
+                    <div className="min-w-[80px]">
+                      <Badge variant={
+                        trade.status === 'WIN' ? 'default' :
+                        trade.status === 'LOSS' ? 'destructive' :
+                        trade.status === 'BE' ? 'secondary' :
+                        'outline'
+                      } className="text-xs">
+                        {trade.status}
+                      </Badge>
+                    </div>
+
+                    {/* P&L */}
+                    <div className={`font-semibold min-w-[120px] text-right ml-auto ${
+                      trade.total_pnl
+                        ? (trade.total_pnl >= 0 ? 'text-success' : 'text-destructive')
+                        : 'text-muted-foreground'
+                    }`}>
+                      {trade.total_pnl ? formatCurrency(trade.total_pnl) : '-'}
+                    </div>
+
+                    {/* View Button */}
                     <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => navigate(`/journal/${trade.id}`)}
+                      variant="ghost"
+                      size="icon"
+                      className="flex-shrink-0"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/journal/${trade.id}`);
+                      }}
                     >
-                      <Eye className="h-4 w-4 mr-2" />
-                      View
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => handleDelete(trade.id)}
-                    >
-                      Delete
+                      <Eye className="h-4 w-4" />
                     </Button>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         )}
       </div>
     </div>
