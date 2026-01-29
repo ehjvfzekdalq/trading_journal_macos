@@ -1,11 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { api, type Trade } from '../lib/api';
 import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
+import { Input } from '../components/ui/input';
 import { formatCurrency } from '../lib/utils';
-import { Plus, Eye, Calendar } from 'lucide-react';
+import { Plus, Eye, Calendar, Search } from 'lucide-react';
 
 type DateRange = 'all' | '7d' | '30d' | '90d' | '180d' | '365d';
 type StatusFilter = 'all' | 'OPEN' | 'WIN' | 'LOSS' | 'BE';
@@ -33,6 +34,7 @@ export default function Journal() {
   const [loading, setLoading] = useState(true);
   const [dateRange, setDateRange] = useState<DateRange>('all');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     loadTrades();
@@ -68,6 +70,26 @@ export default function Journal() {
       }
     }
   };
+
+  // Client-side filter for search (must be before early return)
+  const filteredTrades = useMemo(() => {
+    if (!searchQuery || !searchQuery.trim()) {
+      return trades;
+    }
+
+    const query = searchQuery.toLowerCase().replace(/[^a-z0-9]/g, '');
+    if (!query) {
+      return trades;
+    }
+
+    return trades.filter(trade => {
+      if (!trade || !trade.pair) {
+        return false;
+      }
+      const pair = trade.pair.toLowerCase().replace(/[^a-z0-9]/g, '');
+      return pair.includes(query);
+    });
+  }, [trades, searchQuery]);
 
   if (loading) {
     return <div className="text-muted-foreground">Loading...</div>;
@@ -109,6 +131,31 @@ export default function Journal() {
 
       {/* Filters */}
       <div className="space-y-3">
+        {/* Search Filter */}
+        <div className="flex items-center gap-2">
+          <Search className="h-4 w-4 text-muted-foreground" />
+          <span className="text-xs text-muted-foreground min-w-[60px]">
+            Search:
+          </span>
+          <Input
+            type="text"
+            placeholder="Search by pair (e.g. BTC, ETH, BTCUSDT...)"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="max-w-md h-8"
+          />
+          {searchQuery && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSearchQuery('')}
+              className="h-7 text-xs"
+            >
+              Clear
+            </Button>
+          )}
+        </div>
+
         {/* Date Range Filter */}
         <div className="flex items-center gap-2">
           <Calendar className="h-4 w-4 text-muted-foreground" />
@@ -150,22 +197,24 @@ export default function Journal() {
             ))}
           </div>
           <span className="text-sm text-muted-foreground ml-auto">
-            {trades.length} {t('journal.trades') || 'trades'}
+            {filteredTrades.length} {t('journal.trades') || 'trades'}
           </span>
         </div>
       </div>
 
       <div className="space-y-4">
-        {trades.length === 0 ? (
+        {filteredTrades.length === 0 ? (
           <Card>
             <CardContent className="pt-6 text-center">
               <p className="text-muted-foreground">
-                No trades yet. Create your first trade to get started!
+                {trades.length === 0
+                  ? 'No trades yet. Create your first trade to get started!'
+                  : 'No trades match your search.'}
               </p>
             </CardContent>
           </Card>
         ) : (
-          trades.map(trade => (
+          filteredTrades.map(trade => (
             <Card key={trade.id}>
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
