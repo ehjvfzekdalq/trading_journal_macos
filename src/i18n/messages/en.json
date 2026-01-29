@@ -251,7 +251,9 @@
     "deleteAllConfirm": "⚠️ DELETE ALL TRADES?\n\nThis will permanently delete ALL trades from your journal.\n\nThis action CANNOT be undone!\n\nType \"DELETE\" to confirm.",
     "deleteImportedConfirm": "Delete ALL BitGet imported trades? This cannot be undone.",
     "typeDeleteToConfirm": "Type DELETE (in capitals) to confirm:",
-    "deletionCancelled": "Deletion cancelled"
+    "typeDeleteInCapitals": "You must type DELETE in capital letters to confirm this action.",
+    "deletionCancelled": "Deletion cancelled",
+    "confirmDelete": "Confirm Delete"
   },
   "tradeDetail": {
     "loading": "Loading...",

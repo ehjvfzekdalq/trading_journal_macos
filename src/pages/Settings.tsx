@@ -13,6 +13,7 @@ import { writeTextFile, readTextFile } from '@tauri-apps/plugin-fs';
 import { ExchangeCard } from '../components/ExchangeCard';
 import { ExchangeDialog } from '../components/ExchangeDialog';
 import { SyncDialog } from '../components/SyncDialog';
+import { DeleteConfirmDialog } from '../components/DeleteConfirmDialog';
 
 export default function Settings() {
   const { t, i18n } = useTranslation();
@@ -24,6 +25,7 @@ export default function Settings() {
   const [testingCredentialId, setTestingCredentialId] = useState<string | null>(null);
   const [syncDialogOpen, setSyncDialogOpen] = useState(false);
   const [syncingCredential, setSyncingCredential] = useState<ApiCredentialSafe | null>(null);
+  const [deleteAllDialogOpen, setDeleteAllDialogOpen] = useState(false);
 
   useEffect(() => {
     loadSettings();
@@ -198,13 +200,6 @@ export default function Settings() {
   };
 
   const handleDeleteAllTrades = async () => {
-    // Using prompt for the critical confirmation since this is a destructive action
-    const confirmation = prompt(t('settings.typeDeleteToConfirm'));
-    if (confirmation !== 'DELETE') {
-      toast.info(t('settings.deletionCancelled'));
-      return;
-    }
-
     try {
       const count = await toast.promise(
         api.deleteAllTrades(),
@@ -413,6 +408,14 @@ export default function Settings() {
         />
       )}
 
+      <DeleteConfirmDialog
+        open={deleteAllDialogOpen}
+        onOpenChange={setDeleteAllDialogOpen}
+        onConfirm={handleDeleteAllTrades}
+        title={t('settings.deleteAllTrades')}
+        description={t('settings.deleteAllTradesDescription')}
+      />
+
       <Card>
         <CardHeader>
           <CardTitle>{t('settings.backupRestore')}</CardTitle>
@@ -481,7 +484,7 @@ export default function Settings() {
             <Button
               variant="destructive"
               size="sm"
-              onClick={handleDeleteAllTrades}
+              onClick={() => setDeleteAllDialogOpen(true)}
               disabled={saving}
             >
               <Trash2 className="h-4 w-4 mr-2" />

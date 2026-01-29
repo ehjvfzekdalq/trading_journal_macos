@@ -251,7 +251,9 @@
     "deleteAllConfirm": "⚠️ SUPPRIMER TOUS LES TRADES ?\n\nCela supprimera définitivement TOUS les trades de votre journal.\n\nCette action NE PEUT PAS être annulée !\n\nTapez \"DELETE\" pour confirmer.",
     "deleteImportedConfirm": "Supprimer TOUS les trades importés depuis BitGet ? Cette action ne peut pas être annulée.",
     "typeDeleteToConfirm": "Tapez DELETE (en majuscules) pour confirmer :",
-    "deletionCancelled": "Suppression annulée"
+    "typeDeleteInCapitals": "Vous devez taper DELETE en majuscules pour confirmer cette action.",
+    "deletionCancelled": "Suppression annulée",
+    "confirmDelete": "Confirmer la suppression"
   },
   "tradeDetail": {
     "loading": "Chargement...",
