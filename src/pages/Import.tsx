@@ -213,7 +213,7 @@ export default function Import() {
       {/* File Upload with Drag & Drop */}
       <Card>
         <CardHeader>
-          <CardTitle>Select File</CardTitle>
+          <CardTitle>{t('import.selectFileButton')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div
@@ -236,10 +236,10 @@ export default function Import() {
                 <p className={`text-lg font-medium ${
                   isDragging ? 'text-primary' : ''
                 }`}>
-                  {isDragging ? 'Drop CSV file here' : 'Drag & drop CSV file here'}
+                  {isDragging ? t('import.dragDropActive') : t('import.dragDropMessage')}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  or click the button below to browse
+                  {t('import.browseMessage')}
                 </p>
               </div>
 
