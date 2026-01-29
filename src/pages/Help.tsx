@@ -12,7 +12,8 @@ import {
   Settings as SettingsIcon,
   ChevronDown,
   ChevronRight,
-  Lock
+  Lock,
+  MessageCircle
 } from 'lucide-react';
 
 type Section =
@@ -215,6 +216,21 @@ export default function Help() {
         <CardContent>
           <pre className="text-sm text-muted-foreground whitespace-pre-wrap font-sans">
             {t('help.privacyNoteContent')}
+          </pre>
+        </CardContent>
+      </Card>
+
+      {/* Contact & Support */}
+      <Card className="border-blue-500/50 bg-blue-500/5">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-blue-600 dark:text-blue-400">
+            <MessageCircle className="h-5 w-5" />
+            {t('help.contactNote')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <pre className="text-sm text-muted-foreground whitespace-pre-wrap font-sans">
+            {t('help.contactNoteContent')}
           </pre>
         </CardContent>
       </Card>

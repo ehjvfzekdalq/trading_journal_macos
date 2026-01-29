@@ -178,17 +178,23 @@ export default function Settings() {
   };
 
   const handleDeleteImported = async () => {
-    toast.promise(
-      async () => {
-        const count = await api.deleteBitgetTrades();
-        return count;
-      },
-      {
-        loading: t('settings.deletingImported') || 'Deleting imported trades...',
-        success: (count) => t('settings.deletedImported', { count }),
-        error: (error) => t('settings.deleteFailed') + ': ' + error,
+    try {
+      const count = await toast.promise(
+        api.deleteBitgetTrades(),
+        {
+          loading: t('settings.deletingImported') || 'Deleting imported trades...',
+          success: (count) => t('settings.deletedImported', { count }),
+          error: (error) => t('settings.deleteFailed') + ': ' + error,
+        }
+      );
+      // Reload data after successful deletion
+      if (count > 0) {
+        loadSettings();
       }
-    );
+    } catch (error) {
+      // Error already shown by toast.promise
+      console.error('Delete imported trades failed:', error);
+    }
   };
 
   const handleDeleteAllTrades = async () => {
@@ -199,17 +205,23 @@ export default function Settings() {
       return;
     }
 
-    toast.promise(
-      async () => {
-        const count = await api.deleteAllTrades();
-        return count;
-      },
-      {
-        loading: t('settings.deletingAllTrades') || 'Deleting all trades...',
-        success: (count) => t('settings.deleteSuccess', { count }),
-        error: (error) => t('settings.deleteFailed') + ': ' + error,
+    try {
+      const count = await toast.promise(
+        api.deleteAllTrades(),
+        {
+          loading: t('settings.deletingAllTrades') || 'Deleting all trades...',
+          success: (count) => t('settings.deleteSuccess', { count }),
+          error: (error) => t('settings.deleteFailed') + ': ' + error,
+        }
+      );
+      // Reload data after successful deletion
+      if (count > 0) {
+        loadSettings();
       }
-    );
+    } catch (error) {
+      // Error already shown by toast.promise
+      console.error('Delete all trades failed:', error);
+    }
   };
 
   if (loading || !settings) {

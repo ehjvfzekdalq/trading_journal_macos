@@ -500,7 +500,7 @@
     "faqDesc": "Questions fréquemment posées",
 
     "gettingStarted": "Démarrage",
-    "gettingStartedContent": "Bienvenue sur Nemesis Trading Journal ! Ce guide vous aidera à commencer à suivre et analyser vos trades.",
+    "gettingStartedContent": "Bienvenue sur Nemesis Trading Journal proposé par N0mad ! Ce guide vous aidera à commencer à suivre et analyser vos trades.",
 
     "dashboardHelp": "Tableau de Bord",
     "dashboardTitle": "Comprendre Votre Tableau de Bord",
@@ -595,6 +595,9 @@
     "needHelpContent": "Si vous avez des questions ou besoin d'assistance, consultez d'abord la section FAQ. Pour une aide supplémentaire, référez-vous à la documentation ou contactez via les canaux de feedback de l'app.",
 
     "privacyNote": "Confidentialité & Sécurité",
-    "privacyNoteContent": "🔒 Vos données sont 100% privées et sécurisées.\n• Toutes les données stockées localement sur votre appareil\n• Pas de sync cloud ou serveurs externes\n• Identifiants API chiffrés avec AES-256\n• Utilisez des clés API en lecture seule pour les exchanges\n• Sauvegardes régulières recommandées"
+    "privacyNoteContent": "🔒 Vos données sont 100% privées et sécurisées.\n• Toutes les données stockées localement sur votre appareil\n• Pas de sync cloud ou serveurs externes\n• Identifiants API stockés dans le trousseau système (Keychain sur macOS, Credential Manager sur Windows)\n• Utilisez des clés API en lecture seule pour les exchanges\n• Sauvegardes régulières recommandées",
+
+    "contactNote": "Contact & Support",
+    "contactNoteContent": "📱 Besoin d'aide ou vous avez une question ?\n• Pour toute question ou signalement d'erreur\n• Contactez-nous sur Telegram : @N0mad832\n• Nous sommes là pour vous aider !"
   }
 }
