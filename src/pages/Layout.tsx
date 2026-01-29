@@ -15,11 +15,6 @@ export default function Layout() {
     { name: t('nav.settings') || 'Settings', path: '/settings', icon: Settings },
   ];
 
-  const switchLanguage = (lang: string) => {
-    i18n.changeLanguage(lang);
-    localStorage.setItem('language', lang);
-  };
-
   return (
     <div className="flex h-screen bg-background">
       {/* Sidebar */}
@@ -53,32 +48,6 @@ export default function Layout() {
             );
           })}
         </nav>
-
-        {/* Language Switcher */}
-        <div className="p-4 border-t border-border">
-          <div className="flex gap-2">
-            <button
-              onClick={() => switchLanguage('en')}
-              className={`flex-1 px-3 py-2 rounded text-sm ${
-                i18n.language === 'en'
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-accent text-accent-foreground'
-              }`}
-            >
-              EN
-            </button>
-            <button
-              onClick={() => switchLanguage('fr')}
-              className={`flex-1 px-3 py-2 rounded text-sm ${
-                i18n.language === 'fr'
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-accent text-accent-foreground'
-              }`}
-            >
-              FR
-            </button>
-          </div>
-        </div>
       </aside>
 
       {/* Main Content */}

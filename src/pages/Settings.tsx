@@ -13,7 +13,7 @@ import { ExchangeDialog } from '../components/ExchangeDialog';
 import { SyncDialog } from '../components/SyncDialog';
 
 export default function Settings() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [settings, setSettings] = useState<SettingsType | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -234,6 +234,37 @@ export default function Settings() {
           Configure your trading preferences
         </p>
       </div>
+
+      {/* Language Preference */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">Language</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex gap-2">
+            <Button
+              variant={i18n.language === 'en' ? 'default' : 'outline'}
+              onClick={() => {
+                i18n.changeLanguage('en');
+                localStorage.setItem('language', 'en');
+              }}
+              className="flex-1"
+            >
+              English
+            </Button>
+            <Button
+              variant={i18n.language === 'fr' ? 'default' : 'outline'}
+              onClick={() => {
+                i18n.changeLanguage('fr');
+                localStorage.setItem('language', 'fr');
+              }}
+              className="flex-1"
+            >
+              Français
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader className="pb-3">
