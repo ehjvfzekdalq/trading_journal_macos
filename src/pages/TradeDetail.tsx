@@ -140,7 +140,7 @@ export default function TradeDetail() {
         exits: exitsJson,
         close_date: closeDateTimestamp || undefined,
         total_pnl: totalPnl || undefined,
-        effective_rr: effectiveRR || undefined,
+        effective_weighted_rr: effectiveRR || undefined,
         status: newStatus,
         notes: notes,
       });

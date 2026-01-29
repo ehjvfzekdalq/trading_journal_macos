@@ -14,7 +14,7 @@ import { api } from '../lib/api';
 import { HelpBadge } from '../components/HelpBadge';
 
 // Help tooltips component
-const HelpTooltip = ({ title, content }: { title: string; content: string | JSX.Element }) => {
+const HelpTooltip = ({ title, content }: { title: string; content: string | React.ReactNode }) => {
   const [show, setShow] = useState(false);
 
   return (

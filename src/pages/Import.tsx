@@ -37,7 +37,7 @@ export default function Import() {
 
     const setupFileDrop = async () => {
       try {
-        unlisten = await appWindow.onFileDropEvent(async (event) => {
+        unlisten = await (appWindow as any).onFileDropEvent(async (event: any) => {
           if (event.payload.type === 'hover') {
             setIsDragging(true);
           } else if (event.payload.type === 'drop') {

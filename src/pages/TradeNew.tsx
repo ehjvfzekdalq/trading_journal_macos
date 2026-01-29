@@ -168,9 +168,6 @@ export default function TradeNew() {
         position_size: planMetrics.positionSize,
         quantity: planMetrics.quantity,
         planned_weighted_rr: planMetrics.plannedWeightedRR,
-        effectivePe: effectivePe || undefined,
-        closeDate: closeDate ? Math.floor(new Date(closeDate).getTime() / 1000) : undefined,
-        exits: exitsJson,
         notes,
       });
 
