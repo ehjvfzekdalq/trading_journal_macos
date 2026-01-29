@@ -204,7 +204,7 @@ export default function Settings() {
           success: (count) => t('settings.deletedImported', { count }),
           error: (error) => t('settings.deleteFailed') + ': ' + error,
         }
-      );
+      ) as number;
       // Reload data after successful deletion
       if (count > 0) {
         loadSettings();
@@ -225,7 +225,7 @@ export default function Settings() {
           success: (count) => t('settings.deleteSuccess', { count }),
           error: (error) => t('settings.deleteFailed') + ': ' + error,
         }
-      );
+      ) as number;
       // Reload data after successful deletion
       if (count > 0) {
         loadSettings();

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { api, type ImportPreview, type ImportResult } from '../lib/api';
@@ -25,6 +26,7 @@ interface FileDropEvent {
 type UnlistenFn = () => void;
 
 export default function Import() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [previews, setPreviews] = useState<ImportPreview[]>([]);
