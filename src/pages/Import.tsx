@@ -184,10 +184,10 @@ export default function Import() {
         </Button>
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
-            Import Trades
+            {t('import.title')}
             <HelpBadge section="import" />
           </h1>
-          <p className="text-muted-foreground">Import trades from BitGet CSV export</p>
+          <p className="text-muted-foreground">{t('import.description')}</p>
         </div>
       </div>
 
@@ -251,7 +251,7 @@ export default function Import() {
                 variant={isDragging ? 'default' : 'outline'}
               >
                 <Upload className="h-4 w-4 mr-2" />
-                Select CSV File
+                {t('import.selectFile')}
               </Button>
             </div>
           </div>
