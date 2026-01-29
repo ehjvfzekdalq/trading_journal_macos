@@ -184,6 +184,24 @@ export default function TradeDetail() {
     }
   };
 
+  const handleCopyPlanToExecution = () => {
+    if (!trade) return;
+
+    // Copy planned entry to actual entry
+    setEffectivePe(trade.planned_pe);
+
+    // Parse planned TPs and copy to exits
+    const plannedTps = typeof trade.planned_tps === 'string'
+      ? JSON.parse(trade.planned_tps)
+      : trade.planned_tps;
+
+    const copiedExits = plannedTps.map((tp: any) => ({
+      price: tp.price,
+      percent: tp.percent
+    }));
+    setExits(copiedExits);
+  };
+
   if (loading) {
     return <div className="text-muted-foreground">Loading...</div>;
   }
@@ -432,10 +450,22 @@ export default function TradeDetail() {
         <div className="space-y-6">
           <Card>
             <CardHeader className="bg-primary/5">
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5" />
-                Trade Execution
-              </CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5" />
+                  Trade Execution
+                </CardTitle>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCopyPlanToExecution}
+                  disabled={!trade}
+                >
+                  <Copy className="h-4 w-4 mr-2" />
+                  Copy Plan
+                </Button>
+              </div>
             </CardHeader>
             <CardContent className="space-y-4 pt-6">
               {/* Actual Entry & Close Date */}
