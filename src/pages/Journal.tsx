@@ -247,7 +247,13 @@ export default function Journal() {
                       if (trade.status !== 'OPEN' && trade.exits) {
                         try {
                           const exits = typeof trade.exits === 'string' ? JSON.parse(trade.exits) : trade.exits;
-                          const validExits = exits.filter((e: any) => e.price > 0);
+
+                          // Validate parsed exits is an array
+                          if (!Array.isArray(exits)) {
+                            throw new Error('Exits is not an array');
+                          }
+
+                          const validExits = exits.filter((e: any) => e?.price > 0);
 
                           if (validExits.length > 0) {
                             const totalExitPercent = validExits.reduce((sum: number, e: any) => sum + e.percent, 0);
@@ -264,9 +270,13 @@ export default function Journal() {
                                 const effectiveEntries = typeof trade.effective_entries === 'string'
                                   ? JSON.parse(trade.effective_entries)
                                   : trade.effective_entries;
-                                const validEntries = effectiveEntries.filter((e: any) => e.price > 0);
-                                if (validEntries.length > 0) {
-                                  entriesForCalc = validEntries;
+
+                                // Validate parsed entries is an array
+                                if (Array.isArray(effectiveEntries)) {
+                                  const validEntries = effectiveEntries.filter((e: any) => e?.price > 0);
+                                  if (validEntries.length > 0) {
+                                    entriesForCalc = validEntries;
+                                  }
                                 }
                               }
 
@@ -285,6 +295,7 @@ export default function Journal() {
                           }
                         } catch (error) {
                           console.error('Failed to calculate effective RR for trade:', trade.id, error);
+                          effectiveRR = null; // Explicitly set to null on error
                         }
                       }
 

@@ -649,8 +649,10 @@ export default function TradeDetail() {
                         value={tp.price || ''}
                         onChange={(e) => {
                           const newTps = [...plannedTps];
-                          newTps[index].price = Number(e.target.value);
-                          setPlannedTps(newTps);
+                          if (index >= 0 && index < newTps.length) {
+                            newTps[index].price = Number(e.target.value);
+                            setPlannedTps(newTps);
+                          }
                         }}
                         placeholder="0.00"
                         className="font-mono text-sm"
@@ -667,8 +669,10 @@ export default function TradeDetail() {
                         value={tp.percent || ''}
                         onChange={(e) => {
                           const newTps = [...plannedTps];
-                          newTps[index].percent = Number(e.target.value);
-                          setPlannedTps(newTps);
+                          if (index >= 0 && index < newTps.length) {
+                            newTps[index].percent = Number(e.target.value);
+                            setPlannedTps(newTps);
+                          }
                         }}
                         disabled={!tp.price}
                         placeholder="0"
@@ -842,7 +846,7 @@ export default function TradeDetail() {
                       <Badge variant="outline">{t('import.exit')} {index + 1}</Badge>
                       {plannedTps[index]?.percent != null && (
                         <span className="text-xs text-muted-foreground">
-                          {t('tradeNew.plannedSetup')}: {plannedTps[index].percent.toFixed(1)}% @ ${plannedTps[index].price?.toFixed(8)}
+                          {t('tradeNew.plannedSetup')}: {plannedTps[index]?.percent?.toFixed(1)}% @ ${plannedTps[index]?.price?.toFixed(8)}
                         </span>
                       )}
                     </div>
@@ -857,8 +861,10 @@ export default function TradeDetail() {
                           value={exit.price || ''}
                           onChange={(e) => {
                             const newExits = [...exits];
-                            newExits[index].price = Number(e.target.value);
-                            setExits(newExits);
+                            if (index >= 0 && index < newExits.length) {
+                              newExits[index].price = Number(e.target.value);
+                              setExits(newExits);
+                            }
                           }}
                           placeholder={t('tradeNew.pricePlaceholder')}
                           className="font-mono text-sm"
@@ -874,8 +880,10 @@ export default function TradeDetail() {
                           value={exit.percent || ''}
                           onChange={(e) => {
                             const newExits = [...exits];
-                            newExits[index].percent = Number(e.target.value);
-                            setExits(newExits);
+                            if (index >= 0 && index < newExits.length) {
+                              newExits[index].percent = Number(e.target.value);
+                              setExits(newExits);
+                            }
                           }}
                           disabled={!exit.price}
                           placeholder={t('tradeNew.percentPlaceholder')}

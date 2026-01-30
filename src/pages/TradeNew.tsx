@@ -701,7 +701,7 @@ export default function TradeNew() {
                     {/* Show planned entry as reference */}
                     {plannedEntries[index]?.price > 0 && (
                       <div className="text-xs text-muted-foreground">
-                        Planned: {plannedEntries[index].percent}% @ ${plannedEntries[index].price.toFixed(8)}
+                        Planned: {plannedEntries[index]?.percent}% @ ${plannedEntries[index]?.price?.toFixed(8)}
                       </div>
                     )}
 
@@ -801,7 +801,7 @@ export default function TradeNew() {
                       <Badge variant="outline">{t('import.exit')} {index + 1}</Badge>
                       {plannedTps[index]?.price > 0 && (
                         <span className="text-xs text-muted-foreground">
-                          {t('tradeNew.plannedSetup')}: {plannedTps[index].percent}% @ ${plannedTps[index].price.toFixed(8)}
+                          {t('tradeNew.plannedSetup')}: {plannedTps[index]?.percent}% @ ${plannedTps[index]?.price?.toFixed(8)}
                         </span>
                       )}
                     </div>

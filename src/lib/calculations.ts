@@ -23,10 +23,14 @@ export function calculateWeightedEntry(
   entries: Array<{ price: number; percent: number }>
 ): number {
   const validEntries = entries.filter(e => e.price > 0 && e.percent > 0);
-  if (validEntries.length === 0) return 0;
+  if (validEntries.length === 0) {
+    throw new Error('At least one entry with valid price and percent is required');
+  }
 
   const totalPercent = validEntries.reduce((sum, e) => sum + e.percent, 0);
-  if (totalPercent === 0) return 0;
+  if (totalPercent === 0) {
+    throw new Error('Total entry allocation percent must be greater than 0');
+  }
 
   const weightedSum = validEntries.reduce(
     (sum, e) => sum + e.price * e.percent,
@@ -250,11 +254,20 @@ export function calculateTradeMetrics(params: {
   const { portfolio, rPercent, sl, tps, leverage } = params;
 
   // Calculate weighted PE from entries (or use legacy single PE)
-  const weightedPE = params.entries && params.entries.length > 0
-    ? calculateWeightedEntry(params.entries)
-    : params.pe || 0;
+  let weightedPE: number;
+  try {
+    weightedPE = params.entries && params.entries.length > 0
+      ? calculateWeightedEntry(params.entries)
+      : params.pe || 0;
+  } catch (error) {
+    throw new Error('Invalid entry configuration: ' + (error instanceof Error ? error.message : 'Unknown error'));
+  }
 
   const pe = weightedPE;
+
+  if (pe === 0) {
+    throw new Error('Entry price cannot be zero');
+  }
 
   // Basic calculations
   const oneR = calculateOneR(portfolio, rPercent);
@@ -334,11 +347,20 @@ export function calculateExecutionMetrics(params: {
   const { sl, exits, oneR, type } = params;
 
   // Calculate weighted effective PE from filled entries (or use legacy single PE)
-  const weightedPE = params.entries && params.entries.length > 0
-    ? calculateWeightedEntry(params.entries)
-    : params.pe || 0;
+  let weightedPE: number;
+  try {
+    weightedPE = params.entries && params.entries.length > 0
+      ? calculateWeightedEntry(params.entries)
+      : params.pe || 0;
+  } catch (error) {
+    throw new Error('Invalid entry configuration: ' + (error instanceof Error ? error.message : 'Unknown error'));
+  }
 
   const pe = weightedPE;
+
+  if (pe === 0) {
+    throw new Error('Entry price cannot be zero for execution metrics');
+  }
 
   const distanceSL_USD = type === 'LONG' ? pe - sl : sl - pe;
 
