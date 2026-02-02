@@ -1,6 +1,6 @@
 [package]
 name = "trading-journal"
-version = "1.1.0"
+version = "1.1.1"
 description = "Nemesis Trading Journal - Cross-platform desktop app for traders"
 authors = ["N0mad"]
 edition = "2024"
