@@ -41,6 +41,7 @@ export interface Trade {
   pnl_in_r?: number;
   notes: string;
   import_fingerprint?: string;
+  import_source: string; // USER_CREATED | API_IMPORT | CSV_IMPORT
   created_at: number;
   updated_at: number;
 }

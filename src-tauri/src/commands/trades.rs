@@ -35,8 +35,9 @@ fn map_row_to_trade(row: &rusqlite::Row) -> rusqlite::Result<Trade> {
         pnl_in_r: row.get(26)?,
         notes: row.get(27)?,
         import_fingerprint: row.get(28)?,
-        created_at: row.get(29)?,
-        updated_at: row.get(30)?,
+        import_source: row.get(29)?,
+        created_at: row.get(30)?,
+        updated_at: row.get(31)?,
     })
 }
 
@@ -128,13 +129,13 @@ pub async fn create_trade(
                 id, pair, exchange, analysis_date, trade_date, status,
                 portfolio_value, r_percent, min_rr, planned_pe, planned_sl, leverage,
                 planned_tps, planned_entries, position_type, one_r, margin, position_size, quantity,
-                planned_weighted_rr, notes, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                planned_weighted_rr, notes, import_source, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             rusqlite::params![
                 id, trade.pair, trade.exchange, trade.analysis_date, trade.trade_date, trade.status,
                 trade.portfolio_value, trade.r_percent, trade.min_rr, trade.planned_pe, trade.planned_sl, trade.leverage,
                 trade.planned_tps, trade.planned_entries, trade.position_type, trade.one_r, trade.margin, trade.position_size, trade.quantity,
-                trade.planned_weighted_rr, trade.notes, now, now
+                trade.planned_weighted_rr, trade.notes, "USER_CREATED", now, now
             ],
         ).map_err(|e| e.to_string())?;
 
@@ -263,15 +264,15 @@ pub async fn duplicate_trade(
                 id, pair, exchange, analysis_date, trade_date, status,
                 portfolio_value, r_percent, min_rr, planned_pe, planned_sl, leverage,
                 planned_tps, planned_entries, position_type, one_r, margin, position_size, quantity,
-                planned_weighted_rr, notes, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                planned_weighted_rr, notes, import_source, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             rusqlite::params![
                 new_id, original.pair, original.exchange, original.analysis_date, now, "OPEN",
                 original.portfolio_value, original.r_percent, original.min_rr,
                 original.planned_pe, original.planned_sl, original.leverage,
                 original.planned_tps, original.planned_entries, original.position_type, original.one_r,
                 original.margin, original.position_size, original.quantity,
-                original.planned_weighted_rr, notes, now, now
+                original.planned_weighted_rr, notes, "USER_CREATED", now, now
             ],
         ).map_err(|e| e.to_string())?;
 

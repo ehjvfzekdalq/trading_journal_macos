@@ -41,6 +41,17 @@ impl Database {
             println!("Migration: Added planned_entries and effective_entries columns");
         }
 
+        // Migration: Add import_source column
+        let has_import_source: bool = conn
+            .prepare("SELECT COUNT(*) FROM pragma_table_info('trades') WHERE name='import_source'")?
+            .query_row([], |row| row.get::<_, i32>(0))
+            .map(|count| count > 0)?;
+
+        if !has_import_source {
+            conn.execute("ALTER TABLE trades ADD COLUMN import_source TEXT NOT NULL DEFAULT 'USER_CREATED'", [])?;
+            println!("Migration: Added import_source column");
+        }
+
         Ok(())
     }
 }

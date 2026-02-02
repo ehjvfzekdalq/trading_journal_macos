@@ -175,8 +175,8 @@ pub async fn import_bitget_csv(
                             planned_pe, planned_sl, leverage, planned_tps, planned_entries,
                             position_type, one_r, margin, position_size, quantity,
                             planned_weighted_rr, effective_pe, effective_entries, exits, total_pnl,
-                            notes, import_fingerprint, created_at, updated_at
-                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                            notes, import_fingerprint, import_source, created_at, updated_at
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                         rusqlite::params![
                             id,
                             trade_data.pair,
@@ -187,7 +187,7 @@ pub async fn import_bitget_csv(
                             status,
                             portfolio,
                             r_percent,
-                            -100000000.0, // Bypass validation for imports
+                            0.0, // Not applicable for CSV imports - validation skipped via import_source
                             trade_data.entry_price,
                             estimated_sl,
                             leverage,
@@ -205,6 +205,7 @@ pub async fn import_bitget_csv(
                             trade_data.realized_pnl,
                             notes,
                             fingerprint,
+                            "CSV_IMPORT",
                             now,
                             now,
                         ],

@@ -79,8 +79,8 @@ export function calculateRR(distanceTP_USD: number, distanceSL_USD: number): num
 /**
  * Calculate maximum safe leverage (isolated margin)
  */
-export function calculateMaxLeverage(distanceSL_PCT: number): number {
-  if (distanceSL_PCT === 0) return Infinity;
+export function calculateMaxLeverage(distanceSL_PCT: number): number | null {
+  if (distanceSL_PCT === 0) return null;
   return Math.floor(1 / distanceSL_PCT);
 }
 

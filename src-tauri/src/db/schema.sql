@@ -55,6 +55,7 @@ CREATE TABLE IF NOT EXISTS trades (
 
     -- Import tracking
     import_fingerprint TEXT,
+    import_source TEXT NOT NULL DEFAULT 'USER_CREATED' CHECK(import_source IN ('USER_CREATED', 'API_IMPORT', 'CSV_IMPORT')),
 
     created_at INTEGER NOT NULL,
     updated_at INTEGER NOT NULL

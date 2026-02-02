@@ -370,6 +370,9 @@ pub async fn sync_exchange_trades(
                 // Insert trade using transaction
                 if let Err(e) = insert_trade_in_tx(&tx, &trade) {
                     errors.push(format!("Failed to insert trade {}: {}", raw_trade.exchange_trade_id, e));
+                    // Rollback transaction on any insertion error
+                    drop(tx); // Drop transaction to rollback
+                    return Err(format!("Sync failed - no trades imported. Error: {}", errors.join("; ")));
                 } else {
                     imported += 1;
                     if let Some(pnl) = trade.total_pnl {
@@ -379,6 +382,9 @@ pub async fn sync_exchange_trades(
             }
             Err(e) => {
                 errors.push(format!("Failed to map trade {}: {}", raw_trade.exchange_trade_id, e));
+                // Rollback transaction on any mapping error
+                drop(tx); // Drop transaction to rollback
+                return Err(format!("Sync failed - no trades imported. Error: {}", errors.join("; ")));
             }
         }
     }
@@ -386,7 +392,8 @@ pub async fn sync_exchange_trades(
     // Create sync history record
     let now = Utc::now().timestamp();
     let sync_id = Uuid::new_v4().to_string();
-    let status = if errors.is_empty() { "success" } else if imported > 0 { "partial" } else { "failed" };
+    // Status is always "success" here since we rollback on any error
+    let status = "success";
 
     tx.execute(
         "INSERT INTO api_sync_history (id, credential_id, exchange, sync_type, last_sync_timestamp, trades_imported, trades_duplicated, status, error_message, created_at)
@@ -525,7 +532,7 @@ fn map_raw_trade_to_trade(
         status: status.to_string(),
         portfolio_value,
         r_percent,
-        min_rr: -100000000.0, // Sentinel value to bypass validation
+        min_rr: 0.0, // Not applicable for API imports - validation skipped via import_source
         planned_pe: entry_price,
         planned_sl: estimated_sl,
         leverage,
@@ -546,6 +553,7 @@ fn map_raw_trade_to_trade(
         pnl_in_r,
         notes: format!("Imported from {} API", exchange),
         import_fingerprint: Some(fingerprint.to_string()),
+        import_source: "API_IMPORT".to_string(),
         created_at: now,
         updated_at: now,
     })
@@ -562,7 +570,7 @@ fn insert_trade(conn: &rusqlite::Connection, trade: &Trade) -> Result<(), rusqli
             position_type, one_r, margin, position_size, quantity, planned_weighted_rr,
             effective_pe, effective_entries, close_date, exits,
             effective_weighted_rr, total_pnl, pnl_in_r,
-            notes, import_fingerprint, created_at, updated_at
+            notes, import_fingerprint, import_source, created_at, updated_at
         ) VALUES (
             ?, ?, ?, ?, ?, ?,
             ?, ?, ?,
@@ -570,7 +578,7 @@ fn insert_trade(conn: &rusqlite::Connection, trade: &Trade) -> Result<(), rusqli
             ?, ?, ?, ?, ?, ?,
             ?, ?, ?, ?,
             ?, ?, ?,
-            ?, ?, ?, ?
+            ?, ?, ?, ?, ?
         )",
         rusqlite::params![
             trade.id,
@@ -602,6 +610,7 @@ fn insert_trade(conn: &rusqlite::Connection, trade: &Trade) -> Result<(), rusqli
             trade.pnl_in_r,
             trade.notes,
             trade.import_fingerprint,
+            trade.import_source,
             trade.created_at,
             trade.updated_at,
         ],
@@ -619,7 +628,7 @@ fn insert_trade_in_tx(tx: &rusqlite::Transaction, trade: &Trade) -> Result<(), r
             position_type, one_r, margin, position_size, quantity, planned_weighted_rr,
             effective_pe, close_date, exits,
             effective_weighted_rr, total_pnl, pnl_in_r,
-            notes, import_fingerprint, created_at, updated_at
+            notes, import_fingerprint, import_source, created_at, updated_at
         ) VALUES (
             ?, ?, ?, ?, ?, ?,
             ?, ?, ?,
@@ -627,7 +636,7 @@ fn insert_trade_in_tx(tx: &rusqlite::Transaction, trade: &Trade) -> Result<(), r
             ?, ?, ?, ?, ?, ?,
             ?, ?, ?,
             ?, ?, ?,
-            ?, ?, ?, ?
+            ?, ?, ?, ?, ?
         )",
         rusqlite::params![
             trade.id,
@@ -657,6 +666,7 @@ fn insert_trade_in_tx(tx: &rusqlite::Transaction, trade: &Trade) -> Result<(), r
             trade.pnl_in_r,
             trade.notes,
             trade.import_fingerprint,
+            trade.import_source,
             trade.created_at,
             trade.updated_at,
         ],

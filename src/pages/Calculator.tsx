@@ -145,7 +145,7 @@ export default function Calculator() {
 
         const weightedRR = metrics.plannedWeightedRR;
         const rrCheck = weightedRR >= minRR;
-        const leverageCheck = leverage <= metrics.maxLeverage;
+        const leverageCheck = metrics.maxLeverage === null || leverage <= metrics.maxLeverage;
 
         if (!rrCheck) {
           validationErrors.push(`Weighted RR (${weightedRR.toFixed(2)}) is below minimum (${minRR})`);
@@ -547,7 +547,7 @@ export default function Calculator() {
               <div className="flex items-center gap-2">
                 <span className="text-xs text-muted-foreground">{t('calculator.maxLeverage')}:</span>
                 <Badge variant={metrics.type === 'LONG' ? 'default' : 'destructive'} className="font-bold">
-                  {metrics.maxLeverage}x
+                  {metrics.maxLeverage !== null ? `${metrics.maxLeverage}x` : 'N/A'}
                 </Badge>
               </div>
             </div>

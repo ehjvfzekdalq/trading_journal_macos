@@ -37,6 +37,7 @@ pub struct Trade {
 
     pub notes: String,
     pub import_fingerprint: Option<String>,
+    pub import_source: String, // USER_CREATED | API_IMPORT | CSV_IMPORT
 
     pub created_at: i64,
     pub updated_at: i64,

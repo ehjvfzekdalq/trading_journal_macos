@@ -185,7 +185,7 @@ export default function TradeNew() {
           if (planMetrics.plannedWeightedRR < minRR) {
             planValidation.errors.push(`RR (${planMetrics.plannedWeightedRR.toFixed(2)}) is below minimum (${minRR})`);
           }
-          if (leverage > planMetrics.maxLeverage) {
+          if (planMetrics.maxLeverage !== null && leverage > planMetrics.maxLeverage) {
             planValidation.errors.push(`Leverage (${leverage}x) exceeds max (${planMetrics.maxLeverage}x)`);
           }
         }
@@ -539,14 +539,14 @@ export default function TradeNew() {
                       type="number"
                       value={leverage}
                       onChange={(e) => setLeverage(Number(e.target.value))}
-                      className={`text-sm ${planMetrics && leverage > planMetrics.maxLeverage ? 'border-destructive' : ''}`}
+                      className={`text-sm ${planMetrics && planMetrics.maxLeverage !== null && leverage > planMetrics.maxLeverage ? 'border-destructive' : ''}`}
                     />
                     {planMetrics && (
                       <div className="text-xs space-y-1">
                         <div className="text-muted-foreground">
-                          {t('tradeNew.maxSafe')}: {planMetrics.maxLeverage}x
+                          {t('tradeNew.maxSafe')}: {planMetrics.maxLeverage !== null ? `${planMetrics.maxLeverage}x` : 'N/A'}
                         </div>
-                        {leverage > planMetrics.maxLeverage && (
+                        {planMetrics.maxLeverage !== null && leverage > planMetrics.maxLeverage && (
                           <div className="text-destructive font-medium flex items-center gap-1">
                             <AlertCircle className="h-3 w-3" />
                             {t('tradeNew.leverageExceedsSafe')}

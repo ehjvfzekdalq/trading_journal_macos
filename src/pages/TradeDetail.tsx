@@ -180,18 +180,25 @@ export default function TradeDetail() {
           const validEffectiveEntries = effectiveEntries.filter(e => e.price > 0);
           const entriesForCalc = validEffectiveEntries.length > 0 ? validEffectiveEntries : undefined;
 
-          const metrics = calculateExecutionMetrics({
-            entries: entriesForCalc,
-            pe: entriesForCalc ? undefined : effectivePe,
-            sl: trade.planned_sl,
-            exits: normalizedExits,
-            oneR: trade.one_r,
-            positionSize: trade.position_size,
-            type: trade.position_type,
-          });
+          try {
+            const metrics = calculateExecutionMetrics({
+              entries: entriesForCalc,
+              pe: entriesForCalc ? undefined : effectivePe,
+              sl: trade.planned_sl,
+              exits: normalizedExits,
+              oneR: trade.one_r,
+              positionSize: trade.position_size,
+              type: trade.position_type,
+            });
 
-          totalPnl = metrics.totalPnl;
-          effectiveRR = metrics.effectiveRR;
+            totalPnl = metrics.totalPnl;
+            effectiveRR = metrics.effectiveRR;
+          } catch (error) {
+            console.error('Failed to calculate execution metrics:', error);
+            toast.error('Failed to calculate execution metrics. Please check your entry and exit configuration.');
+            setSaving(false);
+            return;
+          }
 
           // Auto-uncheck BE if P&L is not near zero (has significant profit/loss)
           if (manualBE && Math.abs(metrics.totalPnl) >= 1.0) {
@@ -224,18 +231,25 @@ export default function TradeDetail() {
           const validEffectiveEntries = effectiveEntries.filter(e => e.price > 0);
           const entriesForCalc = validEffectiveEntries.length > 0 ? validEffectiveEntries : undefined;
 
-          const metrics = calculateExecutionMetrics({
-            entries: entriesForCalc,
-            pe: entriesForCalc ? undefined : effectivePe,
-            sl: trade.planned_sl,
-            exits: normalizedExits,
-            oneR: trade.one_r,
-            positionSize: trade.position_size,
-            type: trade.position_type,
-          });
+          try {
+            const metrics = calculateExecutionMetrics({
+              entries: entriesForCalc,
+              pe: entriesForCalc ? undefined : effectivePe,
+              sl: trade.planned_sl,
+              exits: normalizedExits,
+              oneR: trade.one_r,
+              positionSize: trade.position_size,
+              type: trade.position_type,
+            });
 
-          effectiveRR = metrics.effectiveRR;
-          newStatus = 'OPEN';
+            effectiveRR = metrics.effectiveRR;
+            newStatus = 'OPEN';
+          } catch (error) {
+            console.error('Failed to calculate execution metrics for partial exit:', error);
+            toast.error('Failed to calculate execution metrics. Please check your entry and exit configuration.');
+            setSaving(false);
+            return;
+          }
         }
       }
 
@@ -396,17 +410,22 @@ export default function TradeDetail() {
       const validEffectiveEntries = effectiveEntries.filter(e => e.price > 0);
       const entriesForCalc = validEffectiveEntries.length > 0 ? validEffectiveEntries : undefined;
 
-      executionMetrics = calculateExecutionMetrics({
-        entries: entriesForCalc,
-        pe: entriesForCalc ? undefined : effectivePe,
-        sl: trade.planned_sl,
-        exits: normalizedExits,
-        oneR: trade.one_r,
-        positionSize: trade.position_size,
-        type: trade.position_type,
-      });
+      try {
+        executionMetrics = calculateExecutionMetrics({
+          entries: entriesForCalc,
+          pe: entriesForCalc ? undefined : effectivePe,
+          sl: trade.planned_sl,
+          exits: normalizedExits,
+          oneR: trade.one_r,
+          positionSize: trade.position_size,
+          type: trade.position_type,
+        });
 
-      executionValid = true;
+        executionValid = true;
+      } catch (error) {
+        console.error('Failed to calculate execution metrics for display:', error);
+        // executionMetrics remains null, executionValid remains false
+      }
     }
 
     return { executionMetrics, executionValid, validExits, totalExitPercent };
@@ -1034,11 +1053,19 @@ export default function TradeDetail() {
           <Textarea
             id="notes"
             value={notes}
-            onChange={(e) => setNotes(e.target.value)}
+            onChange={(e) => {
+              const MAX_NOTES_LENGTH = 10000;
+              if (e.target.value.length <= MAX_NOTES_LENGTH) {
+                setNotes(e.target.value);
+              }
+            }}
             placeholder={t('tradeDetail.tradeNotesPlaceholder')}
             rows={6}
             className="resize-none"
           />
+          <p className="text-xs text-muted-foreground mt-2 text-right">
+            {notes.length} / 10,000 characters
+          </p>
         </CardContent>
       </Card>
 
