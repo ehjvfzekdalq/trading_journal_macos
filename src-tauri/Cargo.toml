@@ -1,12 +1,12 @@
 [package]
-name = "trading-journal-macos"
+name = "trading-journal"
 version = "1.1.0"
-description = "Nemesis Trading Journal"
+description = "Nemesis Trading Journal - Cross-platform desktop app for traders"
 authors = ["N0mad"]
 edition = "2024"
 
 [lib]
-name = "trading_journal_macos_lib"
+name = "trading_journal_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
