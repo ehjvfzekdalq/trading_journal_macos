@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Trading Journal
+Comment=Track your trading performance
+Exec=trading-journal
+Icon=com.nemesis.TradingJournal
+Type=Application
+Categories=Office;Finance;
+Terminal=false
+StartupWMClass=trading-journal

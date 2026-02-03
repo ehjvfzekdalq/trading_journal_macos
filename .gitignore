@@ -46,6 +46,17 @@ TESTING_CHECKLIST.md
 test-*.js
 *.test.js
 
+# Linux testing diagnostic files
+trading-journal-diagnostic-*.txt
+app-debug.log
+docker-build.log
+build-test.log
+
+# Flatpak build artifacts
+flatpak/build/
+flatpak/.flatpak-builder/
+*.flatpak
+
 # Database
 *.db
 *.db-shm

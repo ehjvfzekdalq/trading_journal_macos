@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.nemesis.TradingJournal</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <name>Trading Journal</name>
+  <summary>Track your trading performance</summary>
+
+  <description>
+    <p>
+      Trading Journal is a cross-platform desktop application for tracking and analyzing your trading performance.
+      Connect to exchanges via API to automatically sync trades, monitor positions, and analyze your trading statistics.
+    </p>
+  </description>
+
+  <launchable type="desktop-id">com.nemesis.TradingJournal.desktop</launchable>
+
+  <screenshots>
+    <screenshot type="default">
+      <caption>Dashboard view</caption>
+    </screenshot>
+  </screenshots>
+
+  <url type="homepage">https://github.com/yourusername/trading-journal-macos</url>
+
+  <provides>
+    <binary>trading-journal</binary>
+  </provides>
+
+  <releases>
+    <release version="1.1.1" date="2026-02-03"/>
+  </releases>
+
+  <content_rating type="oars-1.1"/>
+</component>

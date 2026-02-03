@@ -1,0 +1,64 @@
+app-id: com.nemesis.TradingJournal
+runtime: org.freedesktop.Platform
+runtime-version: '23.08'
+sdk: org.freedesktop.Sdk
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.rust-stable
+  - org.freedesktop.Sdk.Extension.node20
+
+command: trading-journal
+
+finish-args:
+  # Network access for API calls
+  - --share=network
+
+  # X11 and Wayland support
+  - --share=ipc
+  - --socket=x11
+  - --socket=wayland
+
+  # GPU acceleration
+  - --device=dri
+
+  # File system access (for data storage)
+  - --filesystem=xdg-config/trading-journal:create
+  - --filesystem=xdg-data/trading-journal:create
+
+  # System tray
+  - --talk-name=org.kde.StatusNotifierWatcher
+  - --talk-name=org.freedesktop.Notifications
+
+modules:
+  - name: trading-journal
+    buildsystem: simple
+    build-options:
+      append-path: /usr/lib/sdk/rust-stable/bin:/usr/lib/sdk/node20/bin
+      env:
+        CARGO_HOME: /run/build/trading-journal/cargo
+        NPM_CONFIG_CACHE: /run/build/trading-journal/npm-cache
+
+    build-commands:
+      # Install npm dependencies
+      - npm install
+
+      # Build the frontend
+      - npm run build
+
+      # Build Tauri app
+      - cargo build --release --manifest-path=src-tauri/Cargo.toml
+
+      # Install binary
+      - install -Dm755 src-tauri/target/release/trading-journal /app/bin/trading-journal
+
+      # Install desktop file
+      - install -Dm644 flatpak/com.nemesis.TradingJournal.desktop /app/share/applications/com.nemesis.TradingJournal.desktop
+
+      # Install icon
+      - install -Dm644 public/nemesis-logo.jpg /app/share/icons/hicolor/256x256/apps/com.nemesis.TradingJournal.png
+
+      # Install appdata
+      - install -Dm644 flatpak/com.nemesis.TradingJournal.metainfo.xml /app/share/metainfo/com.nemesis.TradingJournal.metainfo.xml
+
+    sources:
+      - type: dir
+        path: ../

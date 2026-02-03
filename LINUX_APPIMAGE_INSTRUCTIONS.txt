@@ -1,0 +1,61 @@
+═══════════════════════════════════════════════════════════════
+  Trading Journal - Linux Installation (AppImage)
+═══════════════════════════════════════════════════════════════
+
+STEP 1: Install Dependencies (ONE TIME ONLY)
+─────────────────────────────────────────────
+
+Run this command in your terminal:
+
+    Manjaro/Arch:
+    sudo pacman -S gtk3 webkit2gtk
+
+    Ubuntu/Debian:
+    sudo apt install libgtk-3-0 libwebkit2gtk-4.1-0
+
+    Fedora:
+    sudo dnf install gtk3 webkit2gtk4.1
+
+This installs the required system libraries (GTK and WebKit).
+Most systems already have these installed!
+
+─────────────────────────────────────────────
+STEP 2: Download the AppImage
+─────────────────────────────────────────────
+
+Download: trading-journal_1.1.1_amd64.AppImage
+
+─────────────────────────────────────────────
+STEP 3: Make it Executable
+─────────────────────────────────────────────
+
+Open terminal in the download folder and run:
+
+    chmod +x trading-journal_*.AppImage
+
+─────────────────────────────────────────────
+STEP 4: Run the App
+─────────────────────────────────────────────
+
+Double-click the AppImage file, or run in terminal:
+
+    ./trading-journal_*.AppImage
+
+═══════════════════════════════════════════════════════════════
+TROUBLESHOOTING
+═══════════════════════════════════════════════════════════════
+
+Problem: Blank screen when opening the app
+Solution: You're missing webkit2gtk. Install it with the command
+          from Step 1 above.
+
+Problem: Permission denied
+Solution: Make sure you ran: chmod +x *.AppImage
+
+Problem: File not found
+Solution: Make sure you're in the correct directory where the
+          AppImage is located.
+
+═══════════════════════════════════════════════════════════════
+
+Questions? Open an issue on GitHub or contact the developer.

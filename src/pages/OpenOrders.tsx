@@ -1,15 +1,12 @@
 import { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { api, type OpenOrder, type ApiCredentialSafe } from '../lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
-import { Select } from '../components/ui/select';
-import { RefreshCw, Search, Filter, Clock, TrendingUp, TrendingDown } from 'lucide-react';
+import { RefreshCw, Search, Clock, TrendingUp, TrendingDown } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function OpenOrders() {
-  const { t } = useTranslation();
   const [orders, setOrders] = useState<OpenOrder[]>([]);
   const [credentials, setCredentials] = useState<ApiCredentialSafe[]>([]);
   const [selectedCredential, setSelectedCredential] = useState<string>('');
@@ -18,7 +15,7 @@ export default function OpenOrders() {
   const [filterSide, setFilterSide] = useState<string>('all');
   const [filterOrderType, setFilterOrderType] = useState<string>('all');
   const [autoRefresh, setAutoRefresh] = useState(false);
-  const [autoRefreshInterval, setAutoRefreshInterval] = useState<NodeJS.Timeout | null>(null);
+  const [autoRefreshInterval, setAutoRefreshInterval] = useState<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     loadCredentials();
