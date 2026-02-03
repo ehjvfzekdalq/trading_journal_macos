@@ -144,6 +144,7 @@ export interface ApiCredentialInput {
   is_active?: boolean;
   auto_sync_enabled?: boolean;
   auto_sync_interval?: number;
+  live_mirror_enabled?: boolean;
 }
 
 export interface ApiSyncHistory {

@@ -81,6 +81,7 @@ pub struct ApiCredentialInput {
     pub is_active: Option<bool>,
     pub auto_sync_enabled: Option<bool>,
     pub auto_sync_interval: Option<i64>,
+    pub live_mirror_enabled: Option<bool>,
 }
 
 /// API Sync History record
