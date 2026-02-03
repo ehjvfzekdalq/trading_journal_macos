@@ -70,8 +70,13 @@ impl Position {
             _ => bitget_pos.hold_side.to_uppercase(),
         };
 
+        // Generate position ID if not provided by API
+        let position_id = bitget_pos.pos_id.clone().unwrap_or_else(|| {
+            format!("{}_{}", bitget_pos.symbol, bitget_pos.hold_side)
+        });
+
         Ok(Position {
-            position_id: bitget_pos.pos_id.clone(),
+            position_id,
             symbol: bitget_pos.symbol.clone(),
             exchange: exchange.to_string(),
             position_side,
@@ -131,7 +136,7 @@ pub async fn fetch_current_positions(
                 .map_err(|e| e.to_string())?;
 
             // Convert Bitget positions to generic Position format
-            let positions: Result<Vec<Position>, String> = positions_data.list
+            let positions: Result<Vec<Position>, String> = positions_data
                 .iter()
                 .map(|bitget_pos| Position::from_bitget(bitget_pos, &exchange))
                 .collect();

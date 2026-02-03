@@ -154,16 +154,16 @@ pub struct AllPositionsData {
 /// BitGet position information
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BitgetPosition {
-    /// Position ID
-    #[serde(rename = "posId")]
-    pub pos_id: String,
+    /// Position ID (optional, not always returned by API)
+    #[serde(rename = "posId", skip_serializing_if = "Option::is_none")]
+    pub pos_id: Option<String>,
 
     /// Symbol (e.g., "BTCUSDT")
     pub symbol: String,
 
-    /// Product type: "USDT-FUTURES", "COIN-FUTURES", "USDC-FUTURES"
-    #[serde(rename = "productType")]
-    pub product_type: String,
+    /// Product type: "USDT-FUTURES", "COIN-FUTURES", "USDC-FUTURES" (optional)
+    #[serde(rename = "productType", skip_serializing_if = "Option::is_none")]
+    pub product_type: Option<String>,
 
     /// Margin coin (e.g., "USDT")
     #[serde(rename = "marginCoin")]

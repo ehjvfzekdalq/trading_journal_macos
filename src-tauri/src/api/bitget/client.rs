@@ -12,7 +12,7 @@ use crate::api::{
 
 use super::{
     mapper::map_fill_to_raw_trade,
-    types::{BitgetResponse, FillHistoryData, FillHistoryRequest, AllPositionsData, AllPositionsRequest, PendingOrdersData, PendingOrdersRequest},
+    types::{BitgetResponse, FillHistoryData, FillHistoryRequest, BitgetPosition, AllPositionsRequest, PendingOrdersData, PendingOrdersRequest},
 };
 
 type HmacSha256 = Hmac<Sha256>;
@@ -167,7 +167,7 @@ impl BitgetClient {
     }
 
     /// Fetch all current positions
-    pub async fn fetch_all_positions(&self, request: &AllPositionsRequest) -> Result<AllPositionsData, ApiError> {
+    pub async fn fetch_all_positions(&self, request: &AllPositionsRequest) -> Result<Vec<BitgetPosition>, ApiError> {
         // Rate limit
         self.rate_limiter.acquire().await;
 
@@ -214,7 +214,7 @@ impl BitgetClient {
 
         // Parse response
         let response_text = response.text().await?;
-        let api_response: BitgetResponse<AllPositionsData> = serde_json::from_str(&response_text)
+        let api_response: BitgetResponse<Vec<BitgetPosition>> = serde_json::from_str(&response_text)
             .map_err(|e| ApiError::ParseError(format!("Failed to parse response: {} - Body: {}", e, response_text)))?;
 
         // Check response code

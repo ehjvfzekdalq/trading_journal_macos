@@ -61,6 +61,54 @@ export default function TradeDetail() {
   const [notes, setNotes] = useState('');
   const [manualBE, setManualBE] = useState(false);
 
+  // Calculate current metrics (memoized) - must be before early returns
+  const { executionMetrics, executionValid, validExits, totalExitPercent } = useMemo(() => {
+    // Handle null trade case safely
+    if (!trade) {
+      return {
+        executionMetrics: null,
+        executionValid: false,
+        validExits: [],
+        totalExitPercent: 0
+      };
+    }
+
+    const validExits = exits.filter(e => e.price > 0);
+    const totalExitPercent = validExits.reduce((sum, e) => sum + e.percent, 0);
+    let executionMetrics = null;
+    let executionValid = false;
+
+    if (validExits.length > 0 && totalExitPercent > 0) {
+      const normalizedExits = validExits.map(e => ({
+        price: e.price,
+        percent: e.percent / 100,
+      }));
+
+      // Use effective entries if available (multi-PE), otherwise fall back to single PE
+      const validEffectiveEntries = effectiveEntries.filter(e => e.price > 0);
+      const entriesForCalc = validEffectiveEntries.length > 0 ? validEffectiveEntries : undefined;
+
+      try {
+        executionMetrics = calculateExecutionMetrics({
+          entries: entriesForCalc,
+          pe: entriesForCalc ? undefined : effectivePe,
+          sl: trade.planned_sl,
+          exits: normalizedExits,
+          oneR: trade.one_r,
+          positionSize: trade.position_size,
+          type: trade.position_type,
+        });
+
+        executionValid = true;
+      } catch (error) {
+        console.error('Failed to calculate execution metrics for display:', error);
+        // executionMetrics remains null, executionValid remains false
+      }
+    }
+
+    return { executionMetrics, executionValid, validExits, totalExitPercent };
+  }, [trade, exits, effectiveEntries, effectivePe]);
+
   useEffect(() => {
     if (id) {
       loadTrade(id);
@@ -393,44 +441,6 @@ export default function TradeDetail() {
   if (!trade) {
     return <div className="text-destructive">{t('tradeDetail.notFound')}</div>;
   }
-
-  // Calculate current metrics (memoized)
-  const { executionMetrics, executionValid, validExits, totalExitPercent } = useMemo(() => {
-    const validExits = exits.filter(e => e.price > 0);
-    const totalExitPercent = validExits.reduce((sum, e) => sum + e.percent, 0);
-    let executionMetrics = null;
-    let executionValid = false;
-
-    if (validExits.length > 0 && totalExitPercent > 0) {
-      const normalizedExits = validExits.map(e => ({
-        price: e.price,
-        percent: e.percent / 100,
-      }));
-
-      // Use effective entries if available (multi-PE), otherwise fall back to single PE
-      const validEffectiveEntries = effectiveEntries.filter(e => e.price > 0);
-      const entriesForCalc = validEffectiveEntries.length > 0 ? validEffectiveEntries : undefined;
-
-      try {
-        executionMetrics = calculateExecutionMetrics({
-          entries: entriesForCalc,
-          pe: entriesForCalc ? undefined : effectivePe,
-          sl: trade.planned_sl,
-          exits: normalizedExits,
-          oneR: trade.one_r,
-          positionSize: trade.position_size,
-          type: trade.position_type,
-        });
-
-        executionValid = true;
-      } catch (error) {
-        console.error('Failed to calculate execution metrics for display:', error);
-        // executionMetrics remains null, executionValid remains false
-      }
-    }
-
-    return { executionMetrics, executionValid, validExits, totalExitPercent };
-  }, [exits, effectiveEntries, effectivePe, trade.planned_sl, trade.one_r, trade.position_size, trade.position_type]);
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">

@@ -36,6 +36,9 @@ impl SecureStorage {
     pub fn new(app_data_dir: PathBuf) -> Result<Self, ApiError> {
         let store_path = app_data_dir.join("credentials.enc");
 
+        // Check if store exists before loading
+        let store_exists = store_path.exists();
+
         // Load or create store to get/generate persistent salt
         let store = Self::load_or_create_store(&store_path)?;
 
@@ -43,10 +46,18 @@ impl SecureStorage {
         let machine_id = Self::get_machine_id();
         let master_key = Self::derive_key(&machine_id, &store.salt)?;
 
-        Ok(Self {
+        let storage = Self {
             store_path,
             master_key,
-        })
+        };
+
+        // If we just created a new store, save it immediately to persist the salt
+        if !store_exists {
+            storage.save_store(&store)?;
+            println!("✓ Created new credential store with persistent salt");
+        }
+
+        Ok(storage)
     }
 
     /// Load existing store or create new one with fresh salt
