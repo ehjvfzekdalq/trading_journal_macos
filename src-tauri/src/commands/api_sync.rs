@@ -19,7 +19,14 @@ pub async fn save_api_credentials(
     db: State<'_, Database>,
     input: ApiCredentialInput,
 ) -> Result<ApiCredentialSafe, String> {
-    let conn = db.conn.lock().map_err(|e| e.to_string())?;
+    println!("=== Saving API credentials ===");
+    println!("Exchange: {}, Label: {}", input.exchange, input.label);
+
+    let conn = db.conn.lock().map_err(|e| {
+        let error_msg = format!("Failed to lock database: {}", e);
+        eprintln!("ERROR: {}", error_msg);
+        error_msg
+    })?;
 
     let now = Utc::now().timestamp();
     let id = input.id.unwrap_or_else(|| Uuid::new_v4().to_string());
@@ -28,11 +35,30 @@ pub async fn save_api_credentials(
     let auto_sync_interval = input.auto_sync_interval.unwrap_or(3600); // Default 1 hour
     let live_mirror_enabled = input.live_mirror_enabled.unwrap_or(false);
 
+    println!("Generated credential ID: {}", id);
+
     // Store credentials in system keychain
-    store_api_key(&id, &input.api_key).map_err(|e| e.to_string())?;
-    store_api_secret(&id, &input.api_secret).map_err(|e| e.to_string())?;
+    println!("Storing API key in keychain...");
+    store_api_key(&id, &input.api_key).map_err(|e| {
+        let error_msg = format!("Failed to store API key: {}", e);
+        eprintln!("ERROR: {}", error_msg);
+        error_msg
+    })?;
+
+    println!("Storing API secret in keychain...");
+    store_api_secret(&id, &input.api_secret).map_err(|e| {
+        let error_msg = format!("Failed to store API secret: {}", e);
+        eprintln!("ERROR: {}", error_msg);
+        error_msg
+    })?;
+
     if let Some(ref passphrase) = input.passphrase {
-        store_passphrase(&id, passphrase).map_err(|e| e.to_string())?;
+        println!("Storing passphrase in keychain...");
+        store_passphrase(&id, passphrase).map_err(|e| {
+            let error_msg = format!("Failed to store passphrase: {}", e);
+            eprintln!("ERROR: {}", error_msg);
+            error_msg
+        })?;
     }
 
     // Store placeholder in database to maintain schema compatibility
@@ -52,6 +78,7 @@ pub async fn save_api_credentials(
 
     if exists {
         // Update
+        println!("Updating existing credential in database...");
         conn.execute(
             "UPDATE api_credentials SET
                 exchange = ?, label = ?, api_key = ?, api_secret = ?,
@@ -71,9 +98,14 @@ pub async fn save_api_credentials(
                 &id,
             ],
         )
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| {
+            let error_msg = format!("Failed to update credential in database: {}", e);
+            eprintln!("ERROR: {}", error_msg);
+            error_msg
+        })?;
     } else {
         // Insert
+        println!("Inserting new credential into database...");
         conn.execute(
             "INSERT INTO api_credentials
                 (id, exchange, label, api_key, api_secret, passphrase, is_active, auto_sync_enabled, auto_sync_interval, live_mirror_enabled, created_at, updated_at)
@@ -93,8 +125,14 @@ pub async fn save_api_credentials(
                 now,
             ],
         )
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| {
+            let error_msg = format!("Failed to insert credential into database: {}", e);
+            eprintln!("ERROR: {}", error_msg);
+            error_msg
+        })?;
     }
+
+    println!("Database operation successful!");
 
     // Return safe version
     let credential = ApiCredential {
@@ -109,11 +147,12 @@ pub async fn save_api_credentials(
         last_sync_timestamp: None,
         auto_sync_enabled,
         auto_sync_interval,
-        live_mirror_enabled: false, // Default to disabled
+        live_mirror_enabled,
         created_at: now,
         updated_at: now,
     };
 
+    println!("=== Credential saved successfully! ===\n");
     Ok(credential.to_safe())
 }
 
