@@ -3,7 +3,7 @@ use aes_gcm::{
     Aes256Gcm, Nonce,
 };
 use argon2::{Argon2, PasswordHasher};
-use argon2::password_hash::{rand_core::RngCore, PasswordHash, SaltString};
+use argon2::password_hash::rand_core::RngCore;
 use base64::{Engine as _, engine::general_purpose::STANDARD as BASE64};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -36,14 +36,38 @@ impl SecureStorage {
     pub fn new(app_data_dir: PathBuf) -> Result<Self, ApiError> {
         let store_path = app_data_dir.join("credentials.enc");
 
-        // Derive master key from machine-specific data
+        // Load or create store to get/generate persistent salt
+        let store = Self::load_or_create_store(&store_path)?;
+
+        // Derive master key from machine-specific data using persistent salt
         let machine_id = Self::get_machine_id();
-        let master_key = Self::derive_key(&machine_id)?;
+        let master_key = Self::derive_key(&machine_id, &store.salt)?;
 
         Ok(Self {
             store_path,
             master_key,
         })
+    }
+
+    /// Load existing store or create new one with fresh salt
+    fn load_or_create_store(store_path: &PathBuf) -> Result<CredentialStore, ApiError> {
+        if store_path.exists() {
+            let data = fs::read(store_path)
+                .map_err(|e| ApiError::EncryptionError(format!("Failed to read store: {}", e)))?;
+
+            serde_json::from_slice(&data)
+                .map_err(|e| ApiError::EncryptionError(format!("Failed to parse store: {}", e)))
+        } else {
+            // Create new store with fresh salt
+            let mut salt_bytes = vec![0u8; 16];
+            OsRng.fill_bytes(&mut salt_bytes);
+
+            Ok(CredentialStore {
+                version: ENCRYPTION_VERSION,
+                salt: BASE64.encode(&salt_bytes),
+                credentials: HashMap::new(),
+            })
+        }
     }
 
     /// Get a machine-specific identifier for key derivation
@@ -64,41 +88,30 @@ impl SecureStorage {
         format!("trading-journal-{}-{}", hostname, username)
     }
 
-    /// Derive encryption key from machine ID
-    fn derive_key(machine_id: &str) -> Result<Vec<u8>, ApiError> {
-        let salt = SaltString::generate(&mut OsRng);
-        let argon2 = Argon2::default();
+    /// Derive encryption key from machine ID using persistent salt
+    fn derive_key(machine_id: &str, salt_b64: &str) -> Result<Vec<u8>, ApiError> {
+        use argon2::{Algorithm, Params, Version};
 
-        let password_hash = argon2
-            .hash_password(machine_id.as_bytes(), &salt)
+        let salt_bytes = BASE64.decode(salt_b64)
+            .map_err(|e| ApiError::EncryptionError(format!("Invalid salt: {}", e)))?;
+
+        let argon2 = Argon2::new(
+            Algorithm::Argon2id,
+            Version::V0x13,
+            Params::default(),
+        );
+
+        let mut output_key = [0u8; 32]; // 32 bytes for AES-256
+        argon2
+            .hash_password_into(machine_id.as_bytes(), &salt_bytes, &mut output_key)
             .map_err(|e| ApiError::EncryptionError(format!("Key derivation failed: {}", e)))?;
 
-        // Extract the hash bytes (32 bytes for AES-256)
-        let hash_bytes = password_hash.hash
-            .ok_or_else(|| ApiError::EncryptionError("No hash generated".to_string()))?;
-
-        Ok(hash_bytes.as_bytes()[..32].to_vec())
+        Ok(output_key.to_vec())
     }
 
     /// Load the credential store from disk
     fn load_store(&self) -> Result<CredentialStore, ApiError> {
-        if !self.store_path.exists() {
-            // Create new store with fresh salt
-            let mut salt_bytes = vec![0u8; 16];
-            OsRng.fill_bytes(&mut salt_bytes);
-
-            return Ok(CredentialStore {
-                version: ENCRYPTION_VERSION,
-                salt: BASE64.encode(&salt_bytes),
-                credentials: HashMap::new(),
-            });
-        }
-
-        let data = fs::read(&self.store_path)
-            .map_err(|e| ApiError::EncryptionError(format!("Failed to read store: {}", e)))?;
-
-        serde_json::from_slice(&data)
-            .map_err(|e| ApiError::EncryptionError(format!("Failed to parse store: {}", e)))
+        Self::load_or_create_store(&self.store_path)
     }
 
     /// Save the credential store to disk
