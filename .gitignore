@@ -37,6 +37,7 @@ BUILD.md
 CLAUDE.md
 IMPLEMENTATION_STATUS.md
 INSTALLATION.md
+LINUX_TROUBLESHOOTING.md
 PROGRESS_UPDATE.md
 QUICK_START.md
 RELEASE_SUMMARY.md
@@ -47,6 +48,7 @@ test-*.js
 *.test.js
 
 # Linux testing diagnostic files
+scripts/linux-quick-diagnostic.sh
 trading-journal-diagnostic-*.txt
 app-debug.log
 docker-build.log

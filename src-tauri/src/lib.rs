@@ -27,8 +27,31 @@ pub fn run() {
             println!("Database path: {:?}", db_path);
 
             // Initialize database
-            let database = db::Database::new(db_path.to_str().unwrap())
-                .expect("Failed to initialize database");
+            let database = match db::Database::new(db_path.to_str().unwrap()) {
+                Ok(db) => db,
+                Err(e) => {
+                    eprintln!("❌ Database initialization failed: {}", e);
+                    eprintln!();
+                    eprintln!("This might be due to a failed migration or database corruption.");
+                    eprintln!();
+                    eprintln!("Your database backups are located at:");
+                    eprintln!("  {:?}", app_dir.join("backups"));
+                    eprintln!();
+                    eprintln!("Recovery steps:");
+                    eprintln!("  1. Close this application");
+                    eprintln!("  2. Locate the most recent backup in the backups folder");
+                    eprintln!("  3. Replace trading_journal.db with the backup");
+                    eprintln!("  4. Restart the application");
+                    eprintln!();
+                    eprintln!("If the problem persists, please report this issue with");
+                    eprintln!("the error message shown above.");
+
+                    return Err(Box::new(std::io::Error::new(
+                        std::io::ErrorKind::Other,
+                        format!("Database initialization failed: {}", e),
+                    )));
+                }
+            };
 
             // Store database in app state
             app.manage(database);

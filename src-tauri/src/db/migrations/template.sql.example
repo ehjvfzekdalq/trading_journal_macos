@@ -1,0 +1,19 @@
+-- Migration XXX: [Brief description]
+-- Reason: [Why this change is needed]
+-- Date: YYYY-MM-DD
+-- Breaking: Yes/No
+
+-- Migration SQL here
+-- Examples:
+
+-- Add a new column:
+-- ALTER TABLE table_name ADD COLUMN new_column TEXT;
+
+-- Create a new table:
+-- CREATE TABLE IF NOT EXISTS new_table (
+--     id TEXT PRIMARY KEY,
+--     field TEXT NOT NULL
+-- );
+
+-- Add an index:
+-- CREATE INDEX IF NOT EXISTS idx_table_column ON table_name(column);

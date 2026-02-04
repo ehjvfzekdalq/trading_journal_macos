@@ -155,11 +155,32 @@ trading-journal-macos/
 
 ## 💾 Database
 
-**Location**: `~/Library/Application Support/trading-journal-macos/trading_journal.db`
+**Location**: `~/Library/Application Support/com.trading-journal.app/trading_journal.db`
 
 **Schema**:
 - `settings` - Portfolio configuration (singleton)
 - `trades` - All trade records with full lifecycle data
+- `api_credentials` - Encrypted API credentials for exchange integration
+- `api_sync_history` - History of API synchronizations
+- `schema_migrations` - Database migration tracking
+
+### Database Migrations
+
+The app uses an automatic database migration system that:
+- ✅ **Automatically upgrades your database** when updating the app
+- ✅ **Creates backups before migrations** (stored in `backups/` folder)
+- ✅ **Preserves all your data** during updates
+- ✅ **Verifies migration integrity** with checksums
+- ✅ **Rolls back on failure** to protect your data
+
+**Backups**: Located at `~/Library/Application Support/com.trading-journal.app/backups/`
+- Automatically created before schema changes
+- Last 5 backups are kept
+- Named: `pre_migration_v{version}_{timestamp}.db`
+
+**For Developers**: See [docs/MIGRATIONS.md](docs/MIGRATIONS.md) for how to add new migrations.
+
+**For Users**: See [docs/MIGRATION_RECOVERY.md](docs/MIGRATION_RECOVERY.md) if you encounter migration issues.
 
 The database is automatically created and initialized on first run.
 
