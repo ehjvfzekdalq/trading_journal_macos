@@ -480,7 +480,6 @@ export default function TradeNew() {
                             max="100"
                             value={entry.percent || ''}
                             onChange={(e) => updatePlannedEntry(index, 'percent', Number(e.target.value))}
-                            disabled={!entry.price}
                             placeholder="0"
                             className="text-sm"
                           />
@@ -613,7 +612,6 @@ export default function TradeNew() {
                           newTps[index].percent = Number(e.target.value);
                           setPlannedTps(newTps);
                         }}
-                        disabled={!tp.price}
                         placeholder={t('tradeNew.percentPlaceholder')}
                         className="text-sm"
                       />
@@ -760,7 +758,6 @@ export default function TradeNew() {
                           max="100"
                           value={entry.percent || ''}
                           onChange={(e) => updateEffectiveEntry(index, 'percent', Number(e.target.value))}
-                          disabled={!entry.price}
                           placeholder="0"
                           className="text-sm"
                         />
@@ -850,7 +847,6 @@ export default function TradeNew() {
                             newExits[index].percent = Number(e.target.value);
                             setExits(newExits);
                           }}
-                          disabled={!exit.price}
                           placeholder={t('tradeNew.percentPlaceholder')}
                           className="text-sm"
                         />
