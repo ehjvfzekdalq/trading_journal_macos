@@ -3,9 +3,9 @@ import { api, type Position, type ApiCredentialSafe } from '../lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
-import { formatCurrency } from '../lib/utils';
 import { RefreshCw, Activity, AlertTriangle, TrendingUp, TrendingDown } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { CurrencyDisplay } from './CurrencyDisplay';
 
 export function PositionMonitor() {
   const [positions, setPositions] = useState<Position[]>([]);
@@ -250,7 +250,7 @@ export function PositionMonitor() {
                           </div>
                           <div className="flex justify-between">
                             <span className="text-muted-foreground">Margin:</span>
-                            <span className="font-medium">{formatCurrency(position.margin)}</span>
+                            <span className="font-medium"><CurrencyDisplay value={position.margin} /></span>
                           </div>
                         </div>
                       </div>
@@ -260,7 +260,7 @@ export function PositionMonitor() {
                         {/* Unrealized PnL */}
                         <div>
                           <div className={`text-2xl font-bold ${isProfit ? 'text-success' : 'text-destructive'}`}>
-                            {formatCurrency(position.unrealized_pnl)}
+                            <CurrencyDisplay value={position.unrealized_pnl} />
                           </div>
                           <div className={`text-sm font-medium ${isProfit ? 'text-success' : 'text-destructive'}`}>
                             {position.unrealized_pnl_percent >= 0 ? '+' : ''}
@@ -308,7 +308,7 @@ export function PositionMonitor() {
                       ? 'text-success'
                       : 'text-destructive'
                   }`}>
-                    {formatCurrency(positions.reduce((sum, p) => sum + p.unrealized_pnl, 0))}
+                    <CurrencyDisplay value={positions.reduce((sum, p) => sum + p.unrealized_pnl, 0)} />
                   </div>
                 </div>
               </div>

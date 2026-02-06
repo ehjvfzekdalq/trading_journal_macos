@@ -14,9 +14,12 @@ import { ExchangeCard } from '../components/ExchangeCard';
 import { ExchangeDialog } from '../components/ExchangeDialog';
 import { SyncDialog } from '../components/SyncDialog';
 import { DeleteConfirmDialog } from '../components/DeleteConfirmDialog';
+import { Switch } from '../components/ui/switch';
+import { useAnonymousMode } from '../contexts/AnonymousModeContext';
 
 export default function Settings() {
   const { t, i18n } = useTranslation();
+  const { isAnonymous, toggleAnonymous } = useAnonymousMode();
   const [settings, setSettings] = useState<SettingsType | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -301,6 +304,29 @@ export default function Settings() {
             >
               Français
             </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Privacy Settings */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">{t('settings.privacySettings')}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label className="text-sm font-medium">
+                {t('settings.anonymousMode')}
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                {t('settings.anonymousModeDescription')}
+              </p>
+            </div>
+            <Switch
+              checked={isAnonymous}
+              onCheckedChange={toggleAnonymous}
+            />
           </div>
         </CardContent>
       </Card>

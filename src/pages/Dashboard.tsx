@@ -4,15 +4,20 @@ import { useTranslation } from 'react-i18next';
 import { api, type Trade, type DashboardStats, type EquityCurvePoint } from '../lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
-import { formatCurrency, formatPercent, getDateRangeTimestamp, type DateRange } from '../lib/utils';
+import { formatPercent, getDateRangeTimestamp, type DateRange } from '../lib/utils';
 import { TrendingUp, DollarSign, BarChart3, Calendar } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { HelpBadge } from '../components/HelpBadge';
 import { PositionMonitor } from '../components/PositionMonitor';
+import { CurrencyDisplay } from '../components/CurrencyDisplay';
+import { AnonymousToggle } from '../components/AnonymousToggle';
+import { useAnonymousMode } from '../contexts/AnonymousModeContext';
+import { createCurrencyFormatter, createTooltipFormatter } from '../lib/chartUtils';
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { isAnonymous } = useAnonymousMode();
   const [trades, setTrades] = useState<Trade[]>([]);
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [equityCurve, setEquityCurve] = useState<EquityCurvePoint[]>([]);
@@ -84,6 +89,7 @@ export default function Dashboard() {
 
         {/* Date Range Filter */}
         <div className="flex items-center gap-2">
+          <AnonymousToggle />
           <Calendar className="h-4 w-4 text-muted-foreground" />
           <div className="flex gap-1 border rounded-lg p-1">
             {dateRangeOptions.map((option) => (
@@ -141,7 +147,7 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent>
                 <div className={`text-2xl font-bold ${stats.total_pnl >= 0 ? 'text-success' : 'text-destructive'}`}>
-                  {formatCurrency(stats.total_pnl)}
+                  <CurrencyDisplay value={stats.total_pnl} />
                 </div>
                 <p className="text-xs text-muted-foreground">
                   {t('dashboard.allClosedTrades')}
@@ -159,7 +165,7 @@ export default function Dashboard() {
                   {stats.profit_factor === Infinity ? '∞' : stats.profit_factor.toFixed(2)}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {formatCurrency(stats.gross_profit)} / {formatCurrency(stats.gross_loss)}
+                  <CurrencyDisplay value={stats.gross_profit} /> / <CurrencyDisplay value={stats.gross_loss} />
                 </p>
               </CardContent>
             </Card>
@@ -173,7 +179,7 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-success">
-                  {formatCurrency(stats.best_trade)}
+                  <CurrencyDisplay value={stats.best_trade} />
                 </div>
               </CardContent>
             </Card>
@@ -184,7 +190,7 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-destructive">
-                  {formatCurrency(stats.worst_trade)}
+                  <CurrencyDisplay value={stats.worst_trade} />
                 </div>
               </CardContent>
             </Card>
@@ -223,7 +229,7 @@ export default function Dashboard() {
                   <YAxis
                     className="text-xs"
                     tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                    tickFormatter={(value) => `$${value.toFixed(0)}`}
+                    tickFormatter={createCurrencyFormatter(isAnonymous)}
                   />
                   <Tooltip
                     contentStyle={{
@@ -232,7 +238,7 @@ export default function Dashboard() {
                       borderRadius: '0.5rem',
                     }}
                     labelStyle={{ color: 'hsl(var(--foreground))' }}
-                    formatter={(value: number) => [formatCurrency(value), t('journal.pnl')]}
+                    formatter={(value: number) => [createTooltipFormatter(isAnonymous)(value), t('journal.pnl')]}
                   />
                   <Line
                     type="monotone"
@@ -263,7 +269,7 @@ export default function Dashboard() {
                   <YAxis
                     className="text-xs"
                     tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                    tickFormatter={(value) => `$${value.toFixed(0)}`}
+                    tickFormatter={createCurrencyFormatter(isAnonymous)}
                   />
                   <Tooltip
                     contentStyle={{
@@ -273,7 +279,7 @@ export default function Dashboard() {
                     }}
                     labelStyle={{ color: 'hsl(var(--foreground))' }}
                     formatter={(value: number, name: string) => [
-                      formatCurrency(value),
+                      createTooltipFormatter(isAnonymous)(value),
                       name === 'daily_pnl' ? t('dashboard.dailyPnL') : name
                     ]}
                   />
@@ -336,7 +342,7 @@ export default function Dashboard() {
                     </div>
                     {trade.total_pnl !== null && trade.total_pnl !== undefined && (
                       <div className={`text-sm ${trade.total_pnl >= 0 ? 'text-success' : 'text-destructive'}`}>
-                        {formatCurrency(trade.total_pnl)}
+                        <CurrencyDisplay value={trade.total_pnl} />
                       </div>
                     )}
                   </div>

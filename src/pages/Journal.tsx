@@ -6,11 +6,13 @@ import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
 import { Input } from '../components/ui/input';
 import { Badge } from '../components/ui/badge';
-import { formatCurrency, formatRR, getDateRangeTimestamp, type DateRange } from '../lib/utils';
+import { formatRR, getDateRangeTimestamp, type DateRange } from '../lib/utils';
 import { calculateExecutionMetrics } from '../lib/calculations';
 import { Plus, Eye, Calendar, Search, Trash2 } from 'lucide-react';
 import { HelpBadge } from '../components/HelpBadge';
 import { TrashDialog } from '../components/TrashDialog';
+import { CurrencyDisplay } from '../components/CurrencyDisplay';
+import { AnonymousToggle } from '../components/AnonymousToggle';
 
 type StatusFilter = 'all' | 'OPEN' | 'WIN' | 'LOSS' | 'BE';
 
@@ -102,6 +104,7 @@ export default function Journal() {
           </p>
         </div>
         <div className="flex gap-2">
+          <AnonymousToggle />
           <Button variant="outline" onClick={() => setTrashOpen(true)}>
             <Trash2 className="h-4 w-4 mr-2" />
             {t('journal.trash') || 'Trash'}
@@ -207,10 +210,12 @@ export default function Journal() {
                 <div className="min-w-[120px]">{t('journal.pair') || 'Pair'}</div>
                 <div className="min-w-[100px]">{t('journal.exchange') || 'Exchange'}</div>
                 <div className="min-w-[100px]">{t('journal.date') || 'Date'}</div>
+                <div className="min-w-[60px]">{t('journal.type') || 'Type'}</div>
                 <div className="min-w-[80px]">{t('common.status') || 'Status'}</div>
                 <div className="min-w-[80px] text-right">{t('journal.effectiveRR') || 'R:R'}</div>
                 <div className="min-w-[100px] text-right">{t('journal.pnlInR') || 'P&L (R)'}</div>
-                <div className="min-w-[120px] text-right ml-auto">{t('journal.pnl') || 'P&L'}</div>
+                <div className="min-w-[120px] text-right">{t('journal.realizedPnl') || 'Realized P&L'}</div>
+                <div className="min-w-[120px] text-right ml-auto">{t('journal.pnl') || 'Total P&L'}</div>
                 <div className="w-10">{/* View button */}</div>
               </div>
 
@@ -234,6 +239,13 @@ export default function Journal() {
                     {/* Date */}
                     <div className="text-sm text-muted-foreground min-w-[100px]">
                       {new Date(trade.trade_date * 1000).toLocaleDateString()}
+                    </div>
+
+                    {/* Type (LONG/SHORT) */}
+                    <div className="min-w-[60px]">
+                      <Badge variant={trade.position_type === 'LONG' ? 'default' : 'secondary'} className="text-xs">
+                        {trade.position_type}
+                      </Badge>
                     </div>
 
                     {/* Status */}
@@ -337,13 +349,77 @@ export default function Journal() {
                       );
                     })()}
 
-                    {/* P&L in Currency */}
+                    {/* Realized P&L (shows partial exit PnL even for OPEN trades) */}
+                    {(() => {
+                      let realizedPnl = null;
+
+                      if (trade.status === 'BE') {
+                        realizedPnl = 0;
+                      } else if (trade.exits) {
+                        try {
+                          const exits = typeof trade.exits === 'string' ? JSON.parse(trade.exits) : trade.exits;
+
+                          if (Array.isArray(exits)) {
+                            const validExits = exits.filter((e: any) => e?.price > 0);
+
+                            if (validExits.length > 0) {
+                              const normalizedExits = validExits.map((e: any) => ({
+                                price: e.price,
+                                percent: e.percent / 100,
+                              }));
+
+                              // Parse effective entries if available
+                              let entriesForCalc = undefined;
+                              if (trade.effective_entries) {
+                                const effectiveEntries = typeof trade.effective_entries === 'string'
+                                  ? JSON.parse(trade.effective_entries)
+                                  : trade.effective_entries;
+
+                                if (Array.isArray(effectiveEntries)) {
+                                  const validEntries = effectiveEntries.filter((e: any) => e?.price > 0);
+                                  if (validEntries.length > 0) {
+                                    entriesForCalc = validEntries;
+                                  }
+                                }
+                              }
+
+                              const metrics = calculateExecutionMetrics({
+                                entries: entriesForCalc,
+                                pe: entriesForCalc ? undefined : trade.effective_pe || trade.planned_pe,
+                                sl: trade.planned_sl,
+                                exits: normalizedExits,
+                                oneR: trade.one_r,
+                                positionSize: trade.position_size,
+                                type: trade.position_type,
+                              });
+
+                              realizedPnl = metrics.realizedPnl;
+                            }
+                          }
+                        } catch (error) {
+                          console.error('Failed to calculate realized PnL for trade:', trade.id, error);
+                          realizedPnl = null;
+                        }
+                      }
+
+                      return (
+                        <div className={`font-semibold min-w-[120px] text-right ${
+                          realizedPnl !== null
+                            ? (realizedPnl > 0 ? 'text-success' : realizedPnl < 0 ? 'text-destructive' : 'text-muted-foreground')
+                            : 'text-muted-foreground'
+                        }`}>
+                          {realizedPnl !== null ? <CurrencyDisplay value={realizedPnl} /> : '-'}
+                        </div>
+                      );
+                    })()}
+
+                    {/* Total P&L (only for fully closed trades) */}
                     <div className={`font-semibold min-w-[120px] text-right ml-auto ${
                       (trade.total_pnl != null || trade.status === 'BE')
                         ? ((trade.total_pnl ?? 0) > 0 ? 'text-success' : (trade.total_pnl ?? 0) < 0 ? 'text-destructive' : 'text-muted-foreground')
                         : 'text-muted-foreground'
                     }`}>
-                      {(trade.total_pnl != null || trade.status === 'BE') ? formatCurrency(trade.total_pnl ?? 0) : '-'}
+                      {(trade.total_pnl != null || trade.status === 'BE') ? <CurrencyDisplay value={trade.total_pnl ?? 0} /> : '-'}
                     </div>
 
                     {/* View Button */}

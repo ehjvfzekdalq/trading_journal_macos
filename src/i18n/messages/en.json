@@ -60,9 +60,11 @@
     "pair": "Pair",
     "exchange": "Exchange",
     "date": "Date",
+    "type": "Type",
     "plannedRR": "Planned RR",
     "effectiveRR": "Effective RR",
     "pnlInR": "P&L (R)",
+    "realizedPnl": "Realized P&L",
     "pnl": "P&L",
     "view": "View",
     "delete": "Delete",
@@ -207,6 +209,9 @@
     "configurePortfolio": "Configure your portfolio settings",
     "configureTradingPreferences": "Configure your trading preferences",
     "language": "Language",
+    "privacySettings": "Privacy Settings",
+    "anonymousMode": "Anonymous Mode",
+    "anonymousModeDescription": "Hide dollar amounts throughout the app while keeping R multiples, ratios, and percentages visible. Useful for screenshots and screen sharing.",
     "portfolioSettings": "Portfolio Settings",
     "exchangeConnections": "Exchange Connections",
     "addExchange": "Add Exchange",
@@ -465,7 +470,10 @@
     "short": "SHORT",
     "win": "WIN",
     "loss": "LOSS",
-    "status": "Status"
+    "status": "Status",
+    "anonymous": "Anonymous",
+    "showValues": "Show Values",
+    "anonymousMode": "Anonymous Mode"
   },
   "onboarding": {
     "title": "Welcome to Nemesis Trading Journal",
