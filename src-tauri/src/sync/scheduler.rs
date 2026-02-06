@@ -221,6 +221,7 @@ impl SyncScheduler {
     }
 
     /// Stop the scheduler
+    #[allow(dead_code)]
     pub async fn stop(&self) {
         self.stop_all_tasks().await;
     }

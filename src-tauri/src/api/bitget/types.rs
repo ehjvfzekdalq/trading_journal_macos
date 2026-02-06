@@ -146,6 +146,7 @@ pub struct FillHistoryRequest {
 
 /// BitGet all positions data wrapper
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[allow(dead_code)]
 pub struct AllPositionsData {
     #[serde(default)]
     pub list: Vec<BitgetPosition>,

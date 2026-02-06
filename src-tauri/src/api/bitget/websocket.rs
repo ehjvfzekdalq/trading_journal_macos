@@ -317,7 +317,7 @@ impl BitgetWebSocketClient {
         }
 
         // Check if this is a new position
-        if let Some(old_position) = positions_map.get(&pos_id) {
+        if let Some(_old_position) = positions_map.get(&pos_id) {
             // Position exists - this is an update
             positions_map.insert(pos_id, position.clone());
             Some(PositionEvent::Updated(position))

@@ -132,6 +132,7 @@ impl LiveMirrorManager {
     }
 
     /// Stop all mirroring connections
+    #[allow(dead_code)]
     pub async fn stop_all(&self) {
         let mut connections = self.active_connections.lock().await;
         for (_, handle) in connections.drain() {
@@ -320,7 +321,7 @@ async fn update_live_trade(
         .unrealized_pl
         .parse()
         .map_err(|e| format!("Invalid unrealized PL: {}", e))?;
-    let market_price: f64 = position
+    let _market_price: f64 = position
         .market_price
         .parse()
         .map_err(|e| format!("Invalid market price: {}", e))?;
@@ -346,7 +347,7 @@ async fn close_live_trade(
     let conn = db.conn.lock().map_err(|e| e.to_string())?;
 
     // Get trade data
-    let (entry_price, quantity, position_type, one_r): (f64, f64, String, f64) = conn
+    let (entry_price, _quantity, position_type, one_r): (f64, f64, String, f64) = conn
         .query_row(
             "SELECT planned_pe, quantity, position_type, one_r FROM trades WHERE id = ?",
             [trade_id],

@@ -2,7 +2,7 @@ use aes_gcm::{
     aead::{Aead, KeyInit, OsRng},
     Aes256Gcm, Nonce,
 };
-use argon2::{Argon2, PasswordHasher};
+use argon2::Argon2;
 use argon2::password_hash::rand_core::RngCore;
 use base64::{Engine as _, engine::general_purpose::STANDARD as BASE64};
 use serde::{Deserialize, Serialize};
@@ -198,6 +198,7 @@ impl SecureStorage {
     }
 
     /// Delete a credential
+    #[allow(dead_code)]
     pub fn delete(&self, key: &str) -> Result<(), ApiError> {
         let mut store = self.load_store()?;
         store.credentials.remove(key);
