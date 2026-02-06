@@ -7,15 +7,15 @@ export function AnonymousToggle() {
 
   return (
     <Button
-      variant={isAnonymous ? 'default' : 'outline'}
+      variant="outline"
       size="sm"
       onClick={toggleAnonymous}
-      className="h-7 w-7 p-0"
+      className="px-3"
     >
       {isAnonymous ? (
-        <EyeOff className="h-3.5 w-3.5" />
+        <EyeOff className="h-4 w-4" />
       ) : (
-        <Eye className="h-3.5 w-3.5" />
+        <Eye className="h-4 w-4" />
       )}
     </Button>
   );
