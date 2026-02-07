@@ -203,7 +203,7 @@ export default function Calculator() {
   };
 
   return (
-    <div className="space-y-3 max-w-7xl">
+    <div className="space-y-3 max-w-7xl mx-auto">
       <div>
         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
           {t('calculator.title') || 'Position Calculator'}
@@ -214,8 +214,8 @@ export default function Calculator() {
         </p>
       </div>
 
-      {/* Compact 3-column layout */}
-      <div className="grid grid-cols-3 gap-3">
+      {/* Responsive layout: vertical on narrow screens, 3-column on wider screens */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
         {/* STEP 1: Strategy Settings */}
         <Card className="border-2 border-primary/20 bg-primary/5">
           <CardHeader className="pb-2 pt-3 px-3">
