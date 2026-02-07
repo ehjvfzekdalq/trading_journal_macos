@@ -336,7 +336,7 @@ export default function Settings() {
           <CardTitle className="text-base">{t('settings.portfolioSettings')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3">
             {/* Row 1 */}
             <div className="space-y-1.5">
               <Label htmlFor="initial_capital" className="text-xs font-medium">

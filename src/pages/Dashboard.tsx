@@ -88,10 +88,10 @@ export default function Dashboard() {
         </div>
 
         {/* Date Range Filter */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <AnonymousToggle />
-          <Calendar className="h-4 w-4 text-muted-foreground" />
-          <div className="flex gap-1 border rounded-lg p-1">
+          <Calendar className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+          <div className="flex flex-wrap gap-1 border rounded-lg p-1">
             {dateRangeOptions.map((option) => (
               <Button
                 key={option.value}

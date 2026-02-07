@@ -93,7 +93,7 @@ export default function Journal() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
             {t('journal.title') || 'Nemesis Trading Journal'}
@@ -103,7 +103,7 @@ export default function Journal() {
             {t('journal.manageTrades') || 'Manage your trades'}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <AnonymousToggle />
           <Button variant="outline" onClick={() => setTrashOpen(true)}>
             <Trash2 className="h-4 w-4 mr-2" />
@@ -145,11 +145,11 @@ export default function Journal() {
 
         {/* Date Range Filter */}
         <div className="flex items-center gap-2">
-          <Calendar className="h-4 w-4 text-muted-foreground" />
-          <span className="text-xs text-muted-foreground min-w-[60px]">
+          <Calendar className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+          <span className="text-xs text-muted-foreground min-w-[60px] flex-shrink-0">
             {t('journal.dateRange') || 'Period'}:
           </span>
-          <div className="flex gap-1 border rounded-lg p-1">
+          <div className="flex flex-wrap gap-1 border rounded-lg p-1">
             {dateRangeOptions.map((option) => (
               <Button
                 key={option.value}
@@ -165,12 +165,12 @@ export default function Journal() {
         </div>
 
         {/* Status Filter */}
-        <div className="flex items-center gap-2">
-          <div className="h-4 w-4" /> {/* Spacer for alignment */}
-          <span className="text-xs text-muted-foreground min-w-[60px]">
+        <div className="flex items-center gap-2 flex-wrap">
+          <div className="h-4 w-4 flex-shrink-0" /> {/* Spacer for alignment */}
+          <span className="text-xs text-muted-foreground min-w-[60px] flex-shrink-0">
             {t('common.status') || 'Status'}:
           </span>
-          <div className="flex gap-1 border rounded-lg p-1">
+          <div className="flex flex-wrap gap-1 border rounded-lg p-1">
             {statusOptions.map((option) => (
               <Button
                 key={option.value}
@@ -183,7 +183,7 @@ export default function Journal() {
               </Button>
             ))}
           </div>
-          <span className="text-sm text-muted-foreground ml-auto">
+          <span className="text-sm text-muted-foreground md:ml-auto">
             {filteredTrades.length} {t('journal.trades') || 'trades'}
           </span>
         </div>
@@ -204,7 +204,7 @@ export default function Journal() {
           </Card>
         ) : (
           <Card>
-            <CardContent className="p-0">
+            <CardContent className="p-0 overflow-x-auto">
               {/* Table Header */}
               <div className="flex items-center gap-4 p-3 bg-muted/50 border-b font-semibold text-xs text-muted-foreground">
                 <div className="min-w-[120px]">{t('journal.pair') || 'Pair'}</div>
