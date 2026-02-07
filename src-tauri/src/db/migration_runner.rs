@@ -117,6 +117,11 @@ impl MigrationRunner {
                 "add_soft_delete",
                 include_str!("migrations/006_add_soft_delete.sql"),
             ),
+            Migration::new(
+                7,
+                "add_execution_calculations",
+                include_str!("migrations/007_add_execution_calculations.sql"),
+            ),
         ]
     }
 
@@ -432,6 +437,10 @@ impl MigrationRunner {
 
     fn detect_legacy_version(&self, conn: &Connection) -> Result<u32> {
         // Check columns in reverse order (newest to oldest)
+        if self.column_exists(conn, "trades", "execution_portfolio")? {
+            return Ok(7);
+        }
+
         if self.column_exists(conn, "trades", "deleted_at")? {
             return Ok(6);
         }

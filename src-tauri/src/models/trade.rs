@@ -36,6 +36,15 @@ pub struct Trade {
     pub pnl_in_r: Option<f64>,
 
     pub notes: String,
+
+    pub execution_portfolio: Option<f64>,
+    pub execution_r_percent: Option<f64>,
+    pub execution_margin: Option<f64>,
+    pub execution_position_size: Option<f64>,
+    pub execution_quantity: Option<f64>,
+    pub execution_one_r: Option<f64>,
+    pub execution_potential_profit: Option<f64>,
+
     pub import_fingerprint: Option<String>,
     pub import_source: String, // USER_CREATED | API_IMPORT | CSV_IMPORT
 
@@ -69,6 +78,14 @@ pub struct CreateTradeInput {
     pub planned_weighted_rr: f64,
 
     pub notes: String,
+
+    pub execution_portfolio: Option<f64>,
+    pub execution_r_percent: Option<f64>,
+    pub execution_margin: Option<f64>,
+    pub execution_position_size: Option<f64>,
+    pub execution_quantity: Option<f64>,
+    pub execution_one_r: Option<f64>,
+    pub execution_potential_profit: Option<f64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

@@ -9,12 +9,13 @@ import { Button } from '../components/ui/button';
 import { Textarea } from '../components/ui/textarea';
 import { Badge } from '../components/ui/badge';
 import { api, type Trade } from '../lib/api';
-import { calculateExecutionMetrics, calculateWeightedEntry } from '../lib/calculations';
+import { calculateExecutionMetrics, calculateWeightedEntry, calculateTradeMetrics } from '../lib/calculations';
 import { formatCurrency, formatRR, formatPercent, cn } from '../lib/utils';
-import { ArrowLeft, Copy, Trash2, AlertCircle, TrendingUp, TrendingDown, Calendar, DollarSign, Plus, X } from 'lucide-react';
+import { ArrowLeft, Copy, Trash2, AlertCircle, TrendingUp, TrendingDown, Calendar, Plus, X, Calculator } from 'lucide-react';
 import { HelpBadge } from '../components/HelpBadge';
 import { useEntryManager } from '../hooks/useEntryManager';
 import { WeightedEntryDisplay } from '../components/WeightedEntryDisplay';
+import { Switch } from '../components/ui/switch';
 
 type Exit = {
   price: number;
@@ -63,6 +64,11 @@ export default function TradeDetail() {
   const [closeDate, setCloseDate] = useState('');
   const [notes, setNotes] = useState('');
 
+  // Execution calculations (optional R redefinition)
+  const [useExecutionR, setUseExecutionR] = useState(false);
+  const [executionPortfolio, setExecutionPortfolio] = useState(0);
+  const [executionRPercent, setExecutionRPercent] = useState(0);
+
   // Calculate current metrics (memoized) - must be before early returns
   const { executionMetrics, executionValid, validExits, totalExitPercent } = useMemo(() => {
     // Handle null trade case safely
@@ -110,6 +116,41 @@ export default function TradeDetail() {
 
     return { executionMetrics, executionValid, validExits, totalExitPercent };
   }, [trade, exits, effectiveEntries, effectivePe]);
+
+  // Calculate execution R calculations
+  const executionCalculations = useMemo(() => {
+    if (!trade || !useExecutionR || !executionPortfolio || !executionRPercent) return null;
+
+    const validEffectiveEntries = effectiveEntries.filter(e => e.price > 0);
+    if (validEffectiveEntries.length === 0) return null;
+
+    // Normalize entries to 0-1 scale
+    const totalPercent = validEffectiveEntries.reduce((sum, e) => sum + e.percent, 0);
+    const normalizedEntries = validEffectiveEntries.map(e => ({
+      price: e.price,
+      percent: e.percent / totalPercent
+    }));
+
+    // Get exits (or fall back to planned TPs)
+    const validExits = exits.filter(e => e.price > 0);
+    const normalizedExits = validExits.length > 0
+      ? validExits.map(e => ({ price: e.price, percent: e.percent / 100 }))
+      : plannedTps.filter(tp => tp.price > 0);
+
+    try {
+      return calculateTradeMetrics({
+        portfolio: executionPortfolio,
+        rPercent: executionRPercent / 100,
+        entries: normalizedEntries,
+        sl: plannedSl,
+        tps: normalizedExits,
+        leverage: leverage,
+      });
+    } catch (error) {
+      console.error('Failed to calculate execution metrics:', error);
+      return null;
+    }
+  }, [useExecutionR, executionPortfolio, executionRPercent, effectiveEntries, exits, plannedTps, plannedSl, leverage, trade]);
 
   useEffect(() => {
     if (id) {
@@ -190,6 +231,11 @@ export default function TradeDetail() {
       }
 
       setNotes(data.notes || '');
+
+      // Initialize execution R fields
+      setUseExecutionR(!!data.execution_portfolio && !!data.execution_r_percent);
+      setExecutionPortfolio(data.execution_portfolio || data.portfolio_value);
+      setExecutionRPercent(data.execution_r_percent ? data.execution_r_percent * 100 : data.r_percent * 100);
     } catch (error) {
       console.error('Failed to load trade:', error);
       toast.error(t('tradeDetail.failedToLoad'));
@@ -342,6 +388,25 @@ export default function TradeDetail() {
         ? totalPnl / trade.one_r
         : null;
 
+      // Prepare execution calculation fields
+      const executionFields = useExecutionR && executionCalculations ? {
+        execution_portfolio: executionPortfolio,
+        execution_r_percent: executionRPercent / 100,
+        execution_margin: executionCalculations.margin,
+        execution_position_size: executionCalculations.positionSize,
+        execution_quantity: executionCalculations.quantity,
+        execution_one_r: executionCalculations.oneR,
+        execution_potential_profit: executionCalculations.potentialProfit,
+      } : {
+        execution_portfolio: undefined,
+        execution_r_percent: undefined,
+        execution_margin: undefined,
+        execution_position_size: undefined,
+        execution_quantity: undefined,
+        execution_one_r: undefined,
+        execution_potential_profit: undefined,
+      };
+
       await api.updateTrade(trade.id, {
         // Basic fields
         pair: pair.toUpperCase(),
@@ -362,6 +427,7 @@ export default function TradeDetail() {
         effective_weighted_rr: effectiveRR ?? undefined,
         status: newStatus,
         notes: notes,
+        ...executionFields,
       });
 
       toast.success(t('tradeDetail.tradeUpdated'));
@@ -611,7 +677,7 @@ export default function TradeDetail() {
                           type="number"
                           step="0.00000001"
                           value={entry.price || ''}
-                          onChange={(e) => updatePlannedEntry(index, 'price', Number(e.target.value))}
+                          onChange={(e) => updatePlannedEntry(index, 'price', parseFloat(e.target.value) || 0)}
                           placeholder="0.00"
                           className="font-mono text-sm"
                           required={index === 0}
@@ -627,7 +693,7 @@ export default function TradeDetail() {
                           min="0"
                           max="100"
                           value={entry.percent || ''}
-                          onChange={(e) => updatePlannedEntry(index, 'percent', Number(e.target.value))}
+                          onChange={(e) => updatePlannedEntry(index, 'percent', parseFloat(e.target.value) || 0)}
                           disabled={!entry.price}
                           placeholder="0"
                           className="text-sm"
@@ -653,7 +719,7 @@ export default function TradeDetail() {
                     type="number"
                     step="0.00000001"
                     value={plannedSl || ''}
-                    onChange={(e) => setPlannedSl(Number(e.target.value))}
+                    onChange={(e) => setPlannedSl(parseFloat(e.target.value) || 0)}
                     className="font-mono text-sm"
                     placeholder="0.00"
                     required
@@ -665,7 +731,7 @@ export default function TradeDetail() {
                     id="leverage"
                     type="number"
                     value={leverage}
-                    onChange={(e) => setLeverage(Number(e.target.value))}
+                    onChange={(e) => setLeverage(parseFloat(e.target.value) || 0)}
                     className="text-sm"
                   />
                 </div>
@@ -688,7 +754,7 @@ export default function TradeDetail() {
                         onChange={(e) => {
                           const newTps = [...plannedTps];
                           if (index >= 0 && index < newTps.length) {
-                            newTps[index].price = Number(e.target.value);
+                            newTps[index].price = parseFloat(e.target.value) || 0;
                             setPlannedTps(newTps);
                           }
                         }}
@@ -708,7 +774,7 @@ export default function TradeDetail() {
                         onChange={(e) => {
                           const newTps = [...plannedTps];
                           if (index >= 0 && index < newTps.length) {
-                            newTps[index].percent = Number(e.target.value);
+                            newTps[index].percent = parseFloat(e.target.value) || 0;
                             setPlannedTps(newTps);
                           }
                         }}
@@ -823,7 +889,7 @@ export default function TradeDetail() {
                           type="number"
                           step="0.00000001"
                           value={entry.price || ''}
-                          onChange={(e) => updateEffectiveEntry(index, 'price', Number(e.target.value))}
+                          onChange={(e) => updateEffectiveEntry(index, 'price', parseFloat(e.target.value) || 0)}
                           placeholder="0.00"
                           className="font-mono text-sm"
                         />
@@ -838,7 +904,7 @@ export default function TradeDetail() {
                           min="0"
                           max="100"
                           value={entry.percent || ''}
-                          onChange={(e) => updateEffectiveEntry(index, 'percent', Number(e.target.value))}
+                          onChange={(e) => updateEffectiveEntry(index, 'percent', parseFloat(e.target.value) || 0)}
                           disabled={!entry.price}
                           placeholder="0"
                           className="text-sm"
@@ -869,6 +935,61 @@ export default function TradeDetail() {
                   entries={effectiveEntries}
                   label="Weighted Avg Effective Entry"
                 />
+              </div>
+
+              {/* Execution R Override Section */}
+              <div className="space-y-3 pt-3 border-t">
+                <div className="flex items-center justify-between">
+                  <Label className="text-sm font-semibold">
+                    Execution Calculations (Optional)
+                  </Label>
+                  <Switch
+                    checked={useExecutionR}
+                    onCheckedChange={setUseExecutionR}
+                  />
+                </div>
+
+                {useExecutionR && (
+                  <div className="space-y-3 p-3 border rounded-lg bg-blue-50 dark:bg-blue-950/20">
+                    <p className="text-xs text-muted-foreground">
+                      Override portfolio and R% to recalculate position metrics
+                    </p>
+
+                    <div className="grid gap-3 grid-cols-2">
+                      <div>
+                        <Label htmlFor="execution-portfolio" className="text-xs">
+                          Portfolio ($)
+                        </Label>
+                        <Input
+                          id="execution-portfolio"
+                          type="number"
+                          step="0.01"
+                          value={executionPortfolio || ''}
+                          onChange={(e) => setExecutionPortfolio(parseFloat(e.target.value) || 0)}
+                          placeholder={trade?.portfolio_value.toString() || '0'}
+                          className="font-mono text-sm"
+                        />
+                      </div>
+
+                      <div>
+                        <Label htmlFor="execution-r-percent" className="text-xs">
+                          R %
+                        </Label>
+                        <Input
+                          id="execution-r-percent"
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          max="100"
+                          value={executionRPercent || ''}
+                          onChange={(e) => setExecutionRPercent(parseFloat(e.target.value) || 0)}
+                          placeholder={trade ? (trade.r_percent * 100).toString() : '0'}
+                          className="font-mono text-sm"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Exit Points */}
@@ -926,7 +1047,7 @@ export default function TradeDetail() {
                           onChange={(e) => {
                             const newExits = [...exits];
                             if (index >= 0 && index < newExits.length) {
-                              newExits[index].price = Number(e.target.value);
+                              newExits[index].price = parseFloat(e.target.value) || 0;
                               setExits(newExits);
                             }
                           }}
@@ -945,7 +1066,7 @@ export default function TradeDetail() {
                           onChange={(e) => {
                             const newExits = [...exits];
                             if (index >= 0 && index < newExits.length) {
-                              newExits[index].percent = Number(e.target.value);
+                              newExits[index].percent = parseFloat(e.target.value) || 0;
                               setExits(newExits);
                             }
                           }}
@@ -983,6 +1104,74 @@ export default function TradeDetail() {
                     </div>
                   </div>
                 </div>
+              )}
+
+              {/* Execution Calculations Display */}
+              {useExecutionR && executionCalculations && (
+                <Card className="border-2 border-blue-500 bg-blue-50/50 dark:bg-blue-950/20">
+                  <CardHeader className="pb-2 pt-3 px-3">
+                    <CardTitle className="text-sm flex items-center gap-2">
+                      <Calculator className="h-4 w-4" />
+                      Execution Calculations
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-0 px-3 pb-3 space-y-3">
+                    {/* Position Type */}
+                    <div className="text-center">
+                      <Badge variant={executionCalculations.type === 'LONG' ? 'default' : 'destructive'}>
+                        {executionCalculations.type}
+                      </Badge>
+                    </div>
+
+                    {/* Primary Metrics Grid */}
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="space-y-0.5">
+                        <div className="text-[10px] text-muted-foreground uppercase">Margin</div>
+                        <div className="text-lg font-bold">
+                          {formatCurrency(executionCalculations.margin)}
+                        </div>
+                      </div>
+
+                      <div className="space-y-0.5">
+                        <div className="text-[10px] text-muted-foreground uppercase">Position</div>
+                        <div className="text-lg font-bold">
+                          {formatCurrency(executionCalculations.positionSize)}
+                        </div>
+                      </div>
+
+                      <div className="space-y-0.5">
+                        <div className="text-[10px] text-muted-foreground uppercase">Quantity</div>
+                        <div className="text-lg font-bold">
+                          {executionCalculations.quantity.toFixed(4)}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Secondary Metrics Grid */}
+                    <div className="grid grid-cols-3 gap-3 pt-2 border-t">
+                      <div className="space-y-0.5">
+                        <div className="text-[10px] text-muted-foreground uppercase">1R</div>
+                        <div className="text-sm font-semibold">
+                          {formatCurrency(executionCalculations.oneR)}
+                        </div>
+                      </div>
+
+                      <div className="space-y-0.5">
+                        <div className="text-[10px] text-muted-foreground uppercase">RR Ratio</div>
+                        <div className="text-sm font-semibold">
+                          {formatRR(executionCalculations.plannedWeightedRR)}
+                        </div>
+                      </div>
+
+                      <div className="space-y-0.5">
+                        <div className="text-[10px] text-muted-foreground uppercase">Pot. Profit</div>
+                        <div className="text-sm font-semibold text-success">
+                          {formatCurrency(executionCalculations.potentialProfit)}
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               )}
 
               {/* Close Date */}

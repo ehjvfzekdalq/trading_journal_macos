@@ -53,6 +53,15 @@ CREATE TABLE IF NOT EXISTS trades (
     -- Notes
     notes TEXT DEFAULT '',
 
+    -- Execution calculations (optional R redefinition)
+    execution_portfolio REAL,
+    execution_r_percent REAL,
+    execution_margin REAL,
+    execution_position_size REAL,
+    execution_quantity REAL,
+    execution_one_r REAL,
+    execution_potential_profit REAL,
+
     -- Import tracking
     import_fingerprint TEXT,
     import_source TEXT NOT NULL DEFAULT 'USER_CREATED' CHECK(import_source IN ('USER_CREATED', 'API_IMPORT', 'CSV_IMPORT', 'LIVE_MIRROR')),

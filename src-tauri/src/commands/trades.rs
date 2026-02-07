@@ -38,6 +38,14 @@ fn map_row_to_trade(row: &rusqlite::Row) -> rusqlite::Result<Trade> {
         import_source: row.get(29)?,
         created_at: row.get(30)?,
         updated_at: row.get(31)?,
+        // deleted_at is at position 32, but we don't need it in the Trade struct
+        execution_portfolio: row.get(33)?,
+        execution_r_percent: row.get(34)?,
+        execution_margin: row.get(35)?,
+        execution_position_size: row.get(36)?,
+        execution_quantity: row.get(37)?,
+        execution_one_r: row.get(38)?,
+        execution_potential_profit: row.get(39)?,
     })
 }
 
@@ -129,13 +137,17 @@ pub async fn create_trade(
                 id, pair, exchange, analysis_date, trade_date, status,
                 portfolio_value, r_percent, min_rr, planned_pe, planned_sl, leverage,
                 planned_tps, planned_entries, position_type, one_r, margin, position_size, quantity,
-                planned_weighted_rr, notes, import_source, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                planned_weighted_rr, notes, execution_portfolio, execution_r_percent, execution_margin,
+                execution_position_size, execution_quantity, execution_one_r, execution_potential_profit,
+                import_source, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             rusqlite::params![
                 id, trade.pair, trade.exchange, trade.analysis_date, trade.trade_date, trade.status,
                 trade.portfolio_value, trade.r_percent, trade.min_rr, trade.planned_pe, trade.planned_sl, trade.leverage,
                 trade.planned_tps, trade.planned_entries, trade.position_type, trade.one_r, trade.margin, trade.position_size, trade.quantity,
-                trade.planned_weighted_rr, trade.notes, "USER_CREATED", now, now
+                trade.planned_weighted_rr, trade.notes, trade.execution_portfolio, trade.execution_r_percent, trade.execution_margin,
+                trade.execution_position_size, trade.execution_quantity, trade.execution_one_r, trade.execution_potential_profit,
+                "USER_CREATED", now, now
             ],
         ).map_err(|e| e.to_string())?;
 
@@ -260,6 +272,63 @@ pub async fn update_trade(
         if let Some(planned_entries) = trade_update.get("planned_entries").and_then(|v| v.as_str()) {
             updates.push("planned_entries = ?");
             values.push(Box::new(planned_entries.to_string()));
+        }
+        // Execution calculation fields
+        if let Some(v) = trade_update.get("execution_portfolio") {
+            if v.is_null() {
+                updates.push("execution_portfolio = NULL");
+            } else if let Some(val) = v.as_f64() {
+                updates.push("execution_portfolio = ?");
+                values.push(Box::new(val));
+            }
+        }
+        if let Some(v) = trade_update.get("execution_r_percent") {
+            if v.is_null() {
+                updates.push("execution_r_percent = NULL");
+            } else if let Some(val) = v.as_f64() {
+                updates.push("execution_r_percent = ?");
+                values.push(Box::new(val));
+            }
+        }
+        if let Some(v) = trade_update.get("execution_margin") {
+            if v.is_null() {
+                updates.push("execution_margin = NULL");
+            } else if let Some(val) = v.as_f64() {
+                updates.push("execution_margin = ?");
+                values.push(Box::new(val));
+            }
+        }
+        if let Some(v) = trade_update.get("execution_position_size") {
+            if v.is_null() {
+                updates.push("execution_position_size = NULL");
+            } else if let Some(val) = v.as_f64() {
+                updates.push("execution_position_size = ?");
+                values.push(Box::new(val));
+            }
+        }
+        if let Some(v) = trade_update.get("execution_quantity") {
+            if v.is_null() {
+                updates.push("execution_quantity = NULL");
+            } else if let Some(val) = v.as_f64() {
+                updates.push("execution_quantity = ?");
+                values.push(Box::new(val));
+            }
+        }
+        if let Some(v) = trade_update.get("execution_one_r") {
+            if v.is_null() {
+                updates.push("execution_one_r = NULL");
+            } else if let Some(val) = v.as_f64() {
+                updates.push("execution_one_r = ?");
+                values.push(Box::new(val));
+            }
+        }
+        if let Some(v) = trade_update.get("execution_potential_profit") {
+            if v.is_null() {
+                updates.push("execution_potential_profit = NULL");
+            } else if let Some(val) = v.as_f64() {
+                updates.push("execution_potential_profit = ?");
+                values.push(Box::new(val));
+            }
         }
 
         let query = format!("UPDATE trades SET {} WHERE id = ?", updates.join(", "));

@@ -40,6 +40,13 @@ export interface Trade {
   total_pnl?: number;
   pnl_in_r?: number;
   notes: string;
+  execution_portfolio?: number;
+  execution_r_percent?: number;
+  execution_margin?: number;
+  execution_position_size?: number;
+  execution_quantity?: number;
+  execution_one_r?: number;
+  execution_potential_profit?: number;
   import_fingerprint?: string;
   import_source: string; // USER_CREATED | API_IMPORT | CSV_IMPORT | LIVE_MIRROR
   created_at: number;
@@ -76,6 +83,13 @@ export interface CreateTradeInput {
   quantity: number;
   planned_weighted_rr: number;
   notes: string;
+  execution_portfolio?: number;
+  execution_r_percent?: number;
+  execution_margin?: number;
+  execution_position_size?: number;
+  execution_quantity?: number;
+  execution_one_r?: number;
+  execution_potential_profit?: number;
 }
 
 export interface DashboardStats {

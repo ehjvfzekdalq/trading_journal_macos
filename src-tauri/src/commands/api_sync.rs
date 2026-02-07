@@ -668,6 +668,13 @@ fn map_raw_trade_to_trade(
         total_pnl: Some(raw.pnl),
         pnl_in_r,
         notes: format!("Imported from {} API", exchange),
+        execution_portfolio: None,
+        execution_r_percent: None,
+        execution_margin: None,
+        execution_position_size: None,
+        execution_quantity: None,
+        execution_one_r: None,
+        execution_potential_profit: None,
         import_fingerprint: Some(fingerprint.to_string()),
         import_source: "API_IMPORT".to_string(),
         created_at: now,
@@ -686,7 +693,9 @@ fn insert_trade(conn: &rusqlite::Connection, trade: &Trade) -> Result<(), rusqli
             position_type, one_r, margin, position_size, quantity, planned_weighted_rr,
             effective_pe, effective_entries, close_date, exits,
             effective_weighted_rr, total_pnl, pnl_in_r,
-            notes, import_fingerprint, import_source, created_at, updated_at
+            notes, execution_portfolio, execution_r_percent, execution_margin,
+            execution_position_size, execution_quantity, execution_one_r, execution_potential_profit,
+            import_fingerprint, import_source, created_at, updated_at
         ) VALUES (
             ?, ?, ?, ?, ?, ?,
             ?, ?, ?,
@@ -694,7 +703,8 @@ fn insert_trade(conn: &rusqlite::Connection, trade: &Trade) -> Result<(), rusqli
             ?, ?, ?, ?, ?, ?,
             ?, ?, ?, ?,
             ?, ?, ?,
-            ?, ?, ?, ?, ?
+            ?, ?, ?, ?, ?, ?, ?, ?,
+            ?, ?, ?, ?
         )",
         rusqlite::params![
             trade.id,
@@ -725,6 +735,13 @@ fn insert_trade(conn: &rusqlite::Connection, trade: &Trade) -> Result<(), rusqli
             trade.total_pnl,
             trade.pnl_in_r,
             trade.notes,
+            trade.execution_portfolio,
+            trade.execution_r_percent,
+            trade.execution_margin,
+            trade.execution_position_size,
+            trade.execution_quantity,
+            trade.execution_one_r,
+            trade.execution_potential_profit,
             trade.import_fingerprint,
             trade.import_source,
             trade.created_at,
@@ -744,7 +761,9 @@ fn insert_trade_in_tx(tx: &rusqlite::Transaction, trade: &Trade) -> Result<(), r
             position_type, one_r, margin, position_size, quantity, planned_weighted_rr,
             effective_pe, effective_entries, close_date, exits,
             effective_weighted_rr, total_pnl, pnl_in_r,
-            notes, import_fingerprint, import_source, created_at, updated_at
+            notes, execution_portfolio, execution_r_percent, execution_margin,
+            execution_position_size, execution_quantity, execution_one_r, execution_potential_profit,
+            import_fingerprint, import_source, created_at, updated_at
         ) VALUES (
             ?, ?, ?, ?, ?, ?,
             ?, ?, ?,
@@ -752,7 +771,8 @@ fn insert_trade_in_tx(tx: &rusqlite::Transaction, trade: &Trade) -> Result<(), r
             ?, ?, ?, ?, ?, ?,
             ?, ?, ?, ?,
             ?, ?, ?,
-            ?, ?, ?, ?, ?
+            ?, ?, ?, ?, ?, ?, ?, ?,
+            ?, ?, ?, ?
         )",
         rusqlite::params![
             trade.id,
@@ -783,6 +803,13 @@ fn insert_trade_in_tx(tx: &rusqlite::Transaction, trade: &Trade) -> Result<(), r
             trade.total_pnl,
             trade.pnl_in_r,
             trade.notes,
+            trade.execution_portfolio,
+            trade.execution_r_percent,
+            trade.execution_margin,
+            trade.execution_position_size,
+            trade.execution_quantity,
+            trade.execution_one_r,
+            trade.execution_potential_profit,
             trade.import_fingerprint,
             trade.import_source,
             trade.created_at,

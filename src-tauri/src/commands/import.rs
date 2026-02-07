@@ -396,10 +396,17 @@ pub async fn export_all_data(db: State<'_, Database>) -> Result<String, String> 
                 total_pnl: row.get(25).ok(),
                 pnl_in_r: row.get(26).ok(),
                 notes: row.get(27)?,
-                import_fingerprint: row.get(28).ok(),
-                import_source: row.get(29)?,
-                created_at: row.get(30)?,
-                updated_at: row.get(31)?,
+                execution_portfolio: row.get(28).ok(),
+                execution_r_percent: row.get(29).ok(),
+                execution_margin: row.get(30).ok(),
+                execution_position_size: row.get(31).ok(),
+                execution_quantity: row.get(32).ok(),
+                execution_one_r: row.get(33).ok(),
+                execution_potential_profit: row.get(34).ok(),
+                import_fingerprint: row.get(35).ok(),
+                import_source: row.get(36)?,
+                created_at: row.get(37)?,
+                updated_at: row.get(38)?,
             })
         })
         .map_err(|e| e.to_string())?

@@ -12,10 +12,11 @@ import { api } from '../lib/api';
 import { calculateTradeMetrics, calculateWeightedEntry } from '../lib/calculations';
 import { formatCurrency, formatRR, cn } from '../lib/utils';
 import { validateAllocation } from '../lib/validations';
-import { ArrowLeft, AlertCircle, Calendar, TrendingUp, Copy, Plus, X } from 'lucide-react';
+import { ArrowLeft, AlertCircle, Calendar, TrendingUp, Copy, Plus, X, Calculator } from 'lucide-react';
 import { HelpBadge } from '../components/HelpBadge';
 import { useEntryManager } from '../hooks/useEntryManager';
 import { WeightedEntryDisplay } from '../components/WeightedEntryDisplay';
+import { Switch } from '../components/ui/switch';
 
 type TakeProfit = {
   price: number;
@@ -105,6 +106,11 @@ export default function TradeNew() {
 
   // Unified notes
   const [notes, setNotes] = useState('');
+
+  // Execution calculations (optional R redefinition)
+  const [useExecutionR, setUseExecutionR] = useState(false);
+  const [executionPortfolio, setExecutionPortfolio] = useState(0);
+  const [executionRPercent, setExecutionRPercent] = useState(0);
 
   useEffect(() => {
     const loadSettings = async () => {
@@ -201,6 +207,41 @@ export default function TradeNew() {
 
   const { planMetrics, planValidation } = planCalculation;
 
+  // Calculate execution R calculations
+  const executionCalculations = useMemo(() => {
+    if (!useExecutionR || !executionPortfolio || !executionRPercent) return null;
+
+    const validEffectiveEntries = effectiveEntries.filter(e => e.price > 0);
+    if (validEffectiveEntries.length === 0) return null;
+
+    // Normalize entries to 0-1 scale
+    const totalPercent = validEffectiveEntries.reduce((sum, e) => sum + e.percent, 0);
+    const normalizedEntries = validEffectiveEntries.map(e => ({
+      price: e.price,
+      percent: e.percent / totalPercent
+    }));
+
+    // Get exits (or fall back to planned TPs)
+    const validExits = exits.filter(e => e.price > 0);
+    const normalizedExits = validExits.length > 0
+      ? validExits.map(e => ({ price: e.price, percent: e.percent / 100 }))
+      : plannedTps.filter((tp: TakeProfit) => tp.price > 0);
+
+    try {
+      return calculateTradeMetrics({
+        portfolio: executionPortfolio,
+        rPercent: executionRPercent / 100,
+        entries: normalizedEntries,
+        sl: plannedSl,
+        tps: normalizedExits,
+        leverage: leverage,
+      });
+    } catch (error) {
+      console.error('Failed to calculate execution metrics:', error);
+      return null;
+    }
+  }, [useExecutionR, executionPortfolio, executionRPercent, effectiveEntries, exits, plannedTps, plannedSl, leverage]);
+
   const handleCopyPlanToExecution = () => {
     // Copy entries
     const copiedEntries = plannedEntries.map(e => ({
@@ -277,6 +318,13 @@ export default function TradeNew() {
         quantity: planMetrics.quantity,
         planned_weighted_rr: planMetrics.plannedWeightedRR,
         notes,
+        execution_portfolio: useExecutionR && executionCalculations ? executionPortfolio : undefined,
+        execution_r_percent: useExecutionR && executionCalculations ? executionRPercent / 100 : undefined,
+        execution_margin: executionCalculations?.margin,
+        execution_position_size: executionCalculations?.positionSize,
+        execution_quantity: executionCalculations?.quantity,
+        execution_one_r: executionCalculations?.oneR,
+        execution_potential_profit: executionCalculations?.potentialProfit,
       });
 
       toast.success(t('tradeNew.tradeCreated') || 'Trade created successfully');
@@ -387,7 +435,7 @@ export default function TradeNew() {
                       id="portfolio"
                       type="number"
                       value={portfolio}
-                      onChange={(e) => setPortfolio(Number(e.target.value))}
+                      onChange={(e) => setPortfolio(parseFloat(e.target.value) || 0)}
                       className="text-sm"
                     />
                   </div>
@@ -398,7 +446,7 @@ export default function TradeNew() {
                       type="number"
                       step="0.1"
                       value={rPercent}
-                      onChange={(e) => setRPercent(Number(e.target.value))}
+                      onChange={(e) => setRPercent(parseFloat(e.target.value) || 0)}
                       className="text-sm"
                     />
                   </div>
@@ -409,7 +457,7 @@ export default function TradeNew() {
                       type="number"
                       step="0.1"
                       value={minRR}
-                      onChange={(e) => setMinRR(Number(e.target.value))}
+                      onChange={(e) => setMinRR(parseFloat(e.target.value) || 0)}
                       className="text-sm"
                     />
                   </div>
@@ -463,7 +511,7 @@ export default function TradeNew() {
                             type="number"
                             step="0.00000001"
                             value={entry.price || ''}
-                            onChange={(e) => updatePlannedEntry(index, 'price', Number(e.target.value))}
+                            onChange={(e) => updatePlannedEntry(index, 'price', parseFloat(e.target.value) || 0)}
                             placeholder="0.00"
                             className={`font-mono text-sm ${index === 0 && !entry.price ? 'field-required' : ''}`}
                             required={index === 0}
@@ -479,7 +527,7 @@ export default function TradeNew() {
                             min="0"
                             max="100"
                             value={entry.percent || ''}
-                            onChange={(e) => updatePlannedEntry(index, 'percent', Number(e.target.value))}
+                            onChange={(e) => updatePlannedEntry(index, 'percent', parseFloat(e.target.value) || 0)}
                             placeholder="0"
                             className="text-sm"
                           />
@@ -527,7 +575,7 @@ export default function TradeNew() {
                       type="number"
                       step="0.00000001"
                       value={plannedSl || ''}
-                      onChange={(e) => setPlannedSl(Number(e.target.value))}
+                      onChange={(e) => setPlannedSl(parseFloat(e.target.value) || 0)}
                       className={`font-mono text-sm ${!plannedSl ? 'field-required' : ''}`}
                       placeholder={t('tradeNew.pricePlaceholder')}
                       required
@@ -539,7 +587,7 @@ export default function TradeNew() {
                       id="leverage"
                       type="number"
                       value={leverage}
-                      onChange={(e) => setLeverage(Number(e.target.value))}
+                      onChange={(e) => setLeverage(parseFloat(e.target.value) || 0)}
                       className={`text-sm ${planMetrics && planMetrics.maxLeverage !== null && leverage > planMetrics.maxLeverage ? 'border-destructive' : ''}`}
                     />
                     {planMetrics && (
@@ -591,7 +639,7 @@ export default function TradeNew() {
                         value={tp.price || ''}
                         onChange={(e) => {
                           const newTps = [...plannedTps];
-                          newTps[index].price = Number(e.target.value);
+                          newTps[index].price = parseFloat(e.target.value) || 0;
                           setPlannedTps(newTps);
                         }}
                         placeholder={t('tradeNew.pricePlaceholder')}
@@ -609,7 +657,7 @@ export default function TradeNew() {
                         value={tp.percent || ''}
                         onChange={(e) => {
                           const newTps = [...plannedTps];
-                          newTps[index].percent = Number(e.target.value);
+                          newTps[index].percent = parseFloat(e.target.value) || 0;
                           setPlannedTps(newTps);
                         }}
                         placeholder={t('tradeNew.percentPlaceholder')}
@@ -742,7 +790,7 @@ export default function TradeNew() {
                           type="number"
                           step="0.00000001"
                           value={entry.price || ''}
-                          onChange={(e) => updateEffectiveEntry(index, 'price', Number(e.target.value))}
+                          onChange={(e) => updateEffectiveEntry(index, 'price', parseFloat(e.target.value) || 0)}
                           placeholder="0.00"
                           className="font-mono text-sm"
                         />
@@ -757,7 +805,7 @@ export default function TradeNew() {
                           min="0"
                           max="100"
                           value={entry.percent || ''}
-                          onChange={(e) => updateEffectiveEntry(index, 'percent', Number(e.target.value))}
+                          onChange={(e) => updateEffectiveEntry(index, 'percent', parseFloat(e.target.value) || 0)}
                           placeholder="0"
                           className="text-sm"
                         />
@@ -788,6 +836,129 @@ export default function TradeNew() {
                   label="Weighted Avg Effective Entry"
                 />
               </div>
+
+              {/* Execution R Override Section */}
+              <div className="space-y-3 pt-3 border-t">
+                <div className="flex items-center justify-between">
+                  <Label className="text-sm font-semibold">
+                    Execution Calculations (Optional)
+                  </Label>
+                  <Switch
+                    checked={useExecutionR}
+                    onCheckedChange={setUseExecutionR}
+                  />
+                </div>
+
+                {useExecutionR && (
+                  <div className="space-y-3 p-3 border rounded-lg bg-blue-50 dark:bg-blue-950/20">
+                    <p className="text-xs text-muted-foreground">
+                      Override portfolio and R% to recalculate position metrics
+                    </p>
+
+                    <div className="grid gap-3 grid-cols-2">
+                      <div>
+                        <Label htmlFor="execution-portfolio" className="text-xs">
+                          Portfolio ($)
+                        </Label>
+                        <Input
+                          id="execution-portfolio"
+                          type="number"
+                          step="0.01"
+                          value={executionPortfolio || ''}
+                          onChange={(e) => setExecutionPortfolio(parseFloat(e.target.value) || 0)}
+                          placeholder={portfolio.toString()}
+                          className="font-mono text-sm"
+                        />
+                      </div>
+
+                      <div>
+                        <Label htmlFor="execution-r-percent" className="text-xs">
+                          R %
+                        </Label>
+                        <Input
+                          id="execution-r-percent"
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          max="100"
+                          value={executionRPercent || ''}
+                          onChange={(e) => setExecutionRPercent(parseFloat(e.target.value) || 0)}
+                          placeholder={rPercent.toString()}
+                          className="font-mono text-sm"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Execution Calculations Display */}
+              {useExecutionR && executionCalculations && (
+                <Card className="border-2 border-blue-500 bg-blue-50/50 dark:bg-blue-950/20">
+                  <CardHeader className="pb-2 pt-3 px-3">
+                    <CardTitle className="text-sm flex items-center gap-2">
+                      <Calculator className="h-4 w-4" />
+                      Execution Calculations
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-0 px-3 pb-3 space-y-3">
+                    {/* Position Type */}
+                    <div className="text-center">
+                      <Badge variant={executionCalculations.type === 'LONG' ? 'default' : 'destructive'}>
+                        {executionCalculations.type}
+                      </Badge>
+                    </div>
+
+                    {/* Primary Metrics Grid */}
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="space-y-0.5">
+                        <div className="text-[10px] text-muted-foreground uppercase">Margin</div>
+                        <div className="text-lg font-bold">
+                          {formatCurrency(executionCalculations.margin)}
+                        </div>
+                      </div>
+
+                      <div className="space-y-0.5">
+                        <div className="text-[10px] text-muted-foreground uppercase">Position</div>
+                        <div className="text-lg font-bold">
+                          {formatCurrency(executionCalculations.positionSize)}
+                        </div>
+                      </div>
+
+                      <div className="space-y-0.5">
+                        <div className="text-[10px] text-muted-foreground uppercase">Quantity</div>
+                        <div className="text-lg font-bold">
+                          {executionCalculations.quantity.toFixed(4)}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Secondary Metrics Grid */}
+                    <div className="grid grid-cols-3 gap-3 pt-2 border-t">
+                      <div className="space-y-0.5">
+                        <div className="text-[10px] text-muted-foreground uppercase">1R</div>
+                        <div className="text-sm font-semibold">
+                          {formatCurrency(executionCalculations.oneR)}
+                        </div>
+                      </div>
+
+                      <div className="space-y-0.5">
+                        <div className="text-[10px] text-muted-foreground uppercase">RR Ratio</div>
+                        <div className="text-sm font-semibold">
+                          {formatRR(executionCalculations.plannedWeightedRR)}
+                        </div>
+                      </div>
+
+                      <div className="space-y-0.5">
+                        <div className="text-[10px] text-muted-foreground uppercase">Pot. Profit</div>
+                        <div className="text-sm font-semibold text-success">
+                          {formatCurrency(executionCalculations.potentialProfit)}
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Close Date */}
               <div className="space-y-2 pt-3 border-t">
@@ -827,7 +998,7 @@ export default function TradeNew() {
                           value={exit.price || ''}
                           onChange={(e) => {
                             const newExits = [...exits];
-                            newExits[index].price = Number(e.target.value);
+                            newExits[index].price = parseFloat(e.target.value) || 0;
                             setExits(newExits);
                           }}
                           placeholder={t('tradeNew.pricePlaceholder')}
@@ -844,7 +1015,7 @@ export default function TradeNew() {
                           value={exit.percent || ''}
                           onChange={(e) => {
                             const newExits = [...exits];
-                            newExits[index].percent = Number(e.target.value);
+                            newExits[index].percent = parseFloat(e.target.value) || 0;
                             setExits(newExits);
                           }}
                           placeholder={t('tradeNew.percentPlaceholder')}
