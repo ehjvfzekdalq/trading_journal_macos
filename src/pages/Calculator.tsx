@@ -97,7 +97,7 @@ export default function Calculator() {
     } catch (error) {
       console.error('Failed to save settings:', error);
       toast.error(t('calculator.saveFailed') || 'Failed to save settings');
-    } finally {
+    } finally{
       setSaving(false);
     }
   };
@@ -249,12 +249,10 @@ export default function Calculator() {
               </Label>
               <Input
                 id="portfolio"
-                type="number"
-                value={portfolio}
-                onChange={(e) => {
-                  const v = parseFloat(e.target.value);
-                  if (!isNaN(v) || e.target.value === '') setPortfolio(v || 0);
-                }}
+                type="text"
+                inputMode="decimal"
+                defaultValue={portfolio}
+                onBlur={(e) => setPortfolio(parseFloat(e.target.value) || 0)}
                 className="h-8 text-sm font-semibold"
               />
             </div>
@@ -264,15 +262,17 @@ export default function Calculator() {
               </Label>
               <Input
                 id="rPercent"
-                type="number"
-                step="0.1"
-                value={rPercent}
-                onChange={(e) => {
-                  const v = parseFloat(e.target.value);
-                  if (!isNaN(v) || e.target.value === '') setRPercent(v || 0);
-                }}
+                type="text"
+                inputMode="decimal"
+                defaultValue={rPercent}
+                onBlur={(e) => setRPercent(parseFloat(e.target.value) || 0)}
                 className="h-8 text-sm font-semibold"
               />
+              {portfolio > 0 && rPercent > 0 && (
+                <p className="text-[10px] text-muted-foreground">
+                  = {formatCurrency((portfolio * rPercent) / 100)}
+                </p>
+              )}
             </div>
             <div className="space-y-1">
               <Label htmlFor="minRR" className="text-xs">
@@ -280,13 +280,10 @@ export default function Calculator() {
               </Label>
               <Input
                 id="minRR"
-                type="number"
-                step="0.1"
-                value={minRR}
-                onChange={(e) => {
-                  const v = parseFloat(e.target.value);
-                  if (!isNaN(v) || e.target.value === '') setMinRR(v || 0);
-                }}
+                type="text"
+                inputMode="decimal"
+                defaultValue={minRR}
+                onBlur={(e) => setMinRR(parseFloat(e.target.value) || 0)}
                 className="h-8 text-sm font-semibold"
               />
             </div>
@@ -367,25 +364,18 @@ export default function Calculator() {
                   </div>
                   <div className="grid gap-1.5 grid-cols-2">
                     <Input
-                      type="number"
-                      step="0.00000001"
-                      value={entry.price || ''}
-                      onChange={(e) => {
-                        const v = parseFloat(e.target.value);
-                        if (!isNaN(v) || e.target.value === '') updateEntry(index, 'price', v || 0);
-                      }}
+                      type="text"
+                      inputMode="decimal"
+                      defaultValue={entry.price || ''}
+                      onBlur={(e) => updateEntry(index, 'price', parseFloat(e.target.value) || 0)}
                       placeholder="Price"
                       className={`font-mono text-xs h-6 ${index === 0 && !entry.price ? 'field-required' : ''}`}
                     />
                     <Input
-                      type="number"
-                      min="0"
-                      max="100"
-                      value={entry.percent || ''}
-                      onChange={(e) => {
-                        const v = parseFloat(e.target.value);
-                        if (!isNaN(v) || e.target.value === '') updateEntry(index, 'percent', v || 0);
-                      }}
+                      type="text"
+                      inputMode="decimal"
+                      defaultValue={entry.percent || ''}
+                      onBlur={(e) => updateEntry(index, 'percent', parseFloat(e.target.value) || 0)}
                       disabled={!entry.price}
                       placeholder="%"
                       className="text-xs h-6"
@@ -422,13 +412,10 @@ export default function Calculator() {
               <Label htmlFor="sl" className="text-xs font-semibold">{t('calculator.stopLoss')}</Label>
               <Input
                 id="sl"
-                type="number"
-                step="0.00000001"
-                value={sl}
-                onChange={(e) => {
-                  const v = parseFloat(e.target.value);
-                  if (!isNaN(v) || e.target.value === '') setSl(v || 0);
-                }}
+                type="text"
+                inputMode="decimal"
+                defaultValue={sl || ''}
+                onBlur={(e) => setSl(parseFloat(e.target.value) || 0)}
                 className={`font-mono text-xs h-7 ${!sl ? 'field-required' : ''}`}
                 placeholder="0.00"
               />
@@ -467,25 +454,18 @@ export default function Calculator() {
                   </div>
                   <div className="grid gap-1.5 grid-cols-2">
                     <Input
-                      type="number"
-                      step="0.00000001"
-                      value={tp.price || ''}
-                      onChange={(e) => {
-                        const v = parseFloat(e.target.value);
-                        if (!isNaN(v) || e.target.value === '') updateTp(index, 'price', v || 0);
-                      }}
+                      type="text"
+                      inputMode="decimal"
+                      defaultValue={tp.price || ''}
+                      onBlur={(e) => updateTp(index, 'price', parseFloat(e.target.value) || 0)}
                       placeholder="Price"
                       className={`font-mono text-xs h-6 ${index === 0 && !tp.price ? 'field-required' : ''}`}
                     />
                     <Input
-                      type="number"
-                      min="0"
-                      max="100"
-                      value={tp.percent || ''}
-                      onChange={(e) => {
-                        const v = parseFloat(e.target.value);
-                        if (!isNaN(v) || e.target.value === '') updateTp(index, 'percent', v || 0);
-                      }}
+                      type="text"
+                      inputMode="decimal"
+                      defaultValue={tp.percent || ''}
+                      onBlur={(e) => updateTp(index, 'percent', parseFloat(e.target.value) || 0)}
                       disabled={!tp.price}
                       placeholder="%"
                       className="text-xs h-6"
@@ -578,14 +558,10 @@ export default function Calculator() {
               <Label htmlFor="leverage" className="text-xs font-semibold">{t('calculator.leverageX')}</Label>
               <Input
                 id="leverage"
-                type="number"
-                min="1"
-                max="125"
-                value={leverage}
-                onChange={(e) => {
-                  const v = parseFloat(e.target.value);
-                  if (!isNaN(v) || e.target.value === '') setLeverage(v || 0);
-                }}
+                type="text"
+                inputMode="numeric"
+                defaultValue={leverage}
+                onBlur={(e) => setLeverage(parseInt(e.target.value) || 1)}
                 className="h-7 text-sm font-semibold"
               />
             </div>

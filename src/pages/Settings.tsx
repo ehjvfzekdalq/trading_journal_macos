@@ -344,9 +344,10 @@ export default function Settings() {
               </Label>
               <Input
                 id="initial_capital"
-                type="number"
+                type="text"
+                inputMode="decimal"
                 value={settings.initial_capital}
-                onChange={(e) => setSettings({ ...settings, initial_capital: parseFloat(e.target.value) })}
+                onChange={(e) => setSettings({ ...settings, initial_capital: parseFloat(e.target.value) || 0 })}
                 className="h-8 text-sm"
               />
               <p className="text-[10px] text-muted-foreground">{t('settings.startingPortfolioValue')}</p>
@@ -374,13 +375,18 @@ export default function Settings() {
               </Label>
               <Input
                 id="current_r_percent"
-                type="number"
-                step="0.1"
+                type="text"
+                inputMode="decimal"
                 value={settings.current_r_percent}
-                onChange={(e) => setSettings({ ...settings, current_r_percent: parseFloat(e.target.value) })}
+                onChange={(e) => setSettings({ ...settings, current_r_percent: parseFloat(e.target.value) || 0 })}
                 className="h-8 text-sm"
               />
-              <p className="text-[10px] text-muted-foreground">{t('settings.defaultRiskPerTrade')}</p>
+              <p className="text-[10px] text-muted-foreground">
+                {t('settings.defaultRiskPerTrade')}
+                {settings.initial_capital > 0 && settings.current_r_percent > 0 && (
+                  <> = {((settings.initial_capital * settings.current_r_percent) / 100).toFixed(2)} {settings.currency}</>
+                )}
+              </p>
             </div>
 
             <div className="space-y-1.5">
@@ -389,10 +395,10 @@ export default function Settings() {
               </Label>
               <Input
                 id="default_min_rr"
-                type="number"
-                step="0.1"
+                type="text"
+                inputMode="decimal"
                 value={settings.default_min_rr}
-                onChange={(e) => setSettings({ ...settings, default_min_rr: parseFloat(e.target.value) })}
+                onChange={(e) => setSettings({ ...settings, default_min_rr: parseFloat(e.target.value) || 0 })}
                 className="h-8 text-sm"
               />
               <p className="text-[10px] text-muted-foreground">{t('settings.minRiskRewardRatio')}</p>
@@ -405,9 +411,10 @@ export default function Settings() {
               </Label>
               <Input
                 id="default_leverage"
-                type="number"
+                type="text"
+                inputMode="numeric"
                 value={settings.default_leverage}
-                onChange={(e) => setSettings({ ...settings, default_leverage: parseInt(e.target.value) })}
+                onChange={(e) => setSettings({ ...settings, default_leverage: parseInt(e.target.value) || 1 })}
                 className="h-8 text-sm"
               />
               <p className="text-[10px] text-muted-foreground">{t('settings.leverageMultiplier')}</p>
