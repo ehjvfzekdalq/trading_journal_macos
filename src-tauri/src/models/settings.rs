@@ -8,6 +8,8 @@ pub struct Settings {
     pub default_min_rr: f64,
     pub default_leverage: i32,
     pub currency: String,
+    pub enable_position_monitor: bool,
+    pub enable_api_connections: bool,
     pub created_at: i64,
     pub updated_at: i64,
 }
@@ -19,4 +21,6 @@ pub struct UpdateSettingsInput {
     pub default_min_rr: Option<f64>,
     pub default_leverage: Option<i32>,
     pub currency: Option<String>,
+    pub enable_position_monitor: Option<bool>,
+    pub enable_api_connections: Option<bool>,
 }

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { api, type Trade, type DashboardStats, type EquityCurvePoint } from '../lib/api';
+import { api, type Trade, type DashboardStats, type EquityCurvePoint, type Settings } from '../lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { formatPercent, getDateRangeTimestamp, type DateRange } from '../lib/utils';
@@ -21,6 +21,7 @@ export default function Dashboard() {
   const [trades, setTrades] = useState<Trade[]>([]);
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [equityCurve, setEquityCurve] = useState<EquityCurvePoint[]>([]);
+  const [settings, setSettings] = useState<Settings | null>(null);
   const [loading, setLoading] = useState(true);
   const [dateRange, setDateRange] = useState<DateRange>('all');
 
@@ -50,6 +51,15 @@ export default function Dashboard() {
       setTrades(tradesData);
       setStats(statsData);
       setEquityCurve(equityCurveData);
+
+      // Load settings separately - failure shouldn't break dashboard
+      try {
+        const settingsData = await api.getSettings();
+        setSettings(settingsData);
+      } catch (error) {
+        console.error('Failed to load settings (non-critical):', error);
+        // Settings default to null, which means features are hidden by default
+      }
     } catch (error) {
       console.error('Failed to load dashboard data:', error);
     } finally {
@@ -108,7 +118,7 @@ export default function Dashboard() {
       </div>
 
       {/* Position Monitor Widget */}
-      <PositionMonitor />
+      {settings?.enable_position_monitor && <PositionMonitor />}
 
       {stats && (
         <>

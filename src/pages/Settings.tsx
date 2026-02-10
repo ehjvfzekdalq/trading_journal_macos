@@ -422,56 +422,60 @@ export default function Settings() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>{t('settings.exchangeConnections')}</CardTitle>
-            <Button onClick={() => setShowExchangeDialog(true)} size="sm">
-              <Plus className="h-4 w-4 mr-2" />
-              {t('settings.addExchange')}
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {credentials.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <p>{t('api.noSyncHistory')}</p>
-              <p className="text-sm mt-2">{t('api.addExchangeDescription')}</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {credentials.map((cred) => (
-                <ExchangeCard
-                  key={cred.id}
-                  credential={cred}
-                  onTest={handleTestCredentials}
-                  onSync={handleSync}
-                  onDelete={handleDeleteCredentials}
-                  onToggleActive={handleToggleActive}
-                  onAutoSyncChange={handleAutoSyncChange}
-                  isTesting={testingCredentialId === cred.id}
-                />
-              ))}
-            </div>
+      {settings?.enable_api_connections && (
+        <>
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>{t('settings.exchangeConnections')}</CardTitle>
+                <Button onClick={() => setShowExchangeDialog(true)} size="sm">
+                  <Plus className="h-4 w-4 mr-2" />
+                  {t('settings.addExchange')}
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {credentials.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <p>{t('api.noSyncHistory')}</p>
+                  <p className="text-sm mt-2">{t('api.addExchangeDescription')}</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {credentials.map((cred) => (
+                    <ExchangeCard
+                      key={cred.id}
+                      credential={cred}
+                      onTest={handleTestCredentials}
+                      onSync={handleSync}
+                      onDelete={handleDeleteCredentials}
+                      onToggleActive={handleToggleActive}
+                      onAutoSyncChange={handleAutoSyncChange}
+                      isTesting={testingCredentialId === cred.id}
+                    />
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <ExchangeDialog
+            open={showExchangeDialog}
+            onOpenChange={setShowExchangeDialog}
+            onSaved={loadCredentials}
+          />
+
+          {syncingCredential && (
+            <SyncDialog
+              open={syncDialogOpen}
+              onOpenChange={setSyncDialogOpen}
+              credentialId={syncingCredential.id}
+              exchangeName={syncingCredential.exchange}
+              historyLimit={syncingCredential.exchange === 'bitget' ? '90 days' : '180 days'}
+              onComplete={handleSyncComplete}
+            />
           )}
-        </CardContent>
-      </Card>
-
-      <ExchangeDialog
-        open={showExchangeDialog}
-        onOpenChange={setShowExchangeDialog}
-        onSaved={loadCredentials}
-      />
-
-      {syncingCredential && (
-        <SyncDialog
-          open={syncDialogOpen}
-          onOpenChange={setSyncDialogOpen}
-          credentialId={syncingCredential.id}
-          exchangeName={syncingCredential.exchange}
-          historyLimit={syncingCredential.exchange === 'bitget' ? '90 days' : '180 days'}
-          onComplete={handleSyncComplete}
-        />
+        </>
       )}
 
       <DeleteConfirmDialog

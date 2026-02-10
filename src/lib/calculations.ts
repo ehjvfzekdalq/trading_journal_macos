@@ -227,9 +227,9 @@ export function calculateProfitFactor(
       .reduce((sum, t) => sum + (t.totalPnL || 0), 0)
   );
 
-  if (grossLoss === 0) return grossProfit > 0 ? null : 0;
+  if (grossLoss === 0) return grossProfit > 0 ? Infinity : 0;
   const result = grossProfit / grossLoss;
-  if (!isFinite(result)) return null;
+  if (!isFinite(result)) return Infinity;
   return result;
 }
 

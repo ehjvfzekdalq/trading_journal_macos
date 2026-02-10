@@ -7,6 +7,8 @@ export interface Settings {
   default_min_rr: number;
   default_leverage: number;
   currency: string;
+  enable_position_monitor: boolean;
+  enable_api_connections: boolean;
   created_at: number;
   updated_at: number;
 }

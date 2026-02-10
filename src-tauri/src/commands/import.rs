@@ -349,7 +349,7 @@ pub async fn export_all_data(db: State<'_, Database>) -> Result<String, String> 
     // Get settings
     let settings = conn
         .query_row(
-            "SELECT id, initial_capital, current_r_percent, default_min_rr, default_leverage, currency, created_at, updated_at FROM settings WHERE id = 1",
+            "SELECT id, initial_capital, current_r_percent, default_min_rr, default_leverage, currency, enable_position_monitor, enable_api_connections, created_at, updated_at FROM settings WHERE id = 1",
             [],
             |row| {
                 Ok(Settings {
@@ -359,8 +359,10 @@ pub async fn export_all_data(db: State<'_, Database>) -> Result<String, String> 
                     default_min_rr: row.get(3)?,
                     default_leverage: row.get(4)?,
                     currency: row.get(5)?,
-                    created_at: row.get(6)?,
-                    updated_at: row.get(7)?,
+                    enable_position_monitor: row.get::<_, i32>(6)? == 1,
+                    enable_api_connections: row.get::<_, i32>(7)? == 1,
+                    created_at: row.get(8)?,
+                    updated_at: row.get(9)?,
                 })
             },
         )

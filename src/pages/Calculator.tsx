@@ -52,13 +52,13 @@ export default function Calculator() {
   const [minRR, setMinRR] = useState(2);
 
   // Step 2: Trade Setup - Multiple Entries (using custom hook)
-  const entriesManager = useEntryManager([{ price: 200, percent: 100 }]);
+  const entriesManager = useEntryManager([{ price: 0, percent: 100 }]);
   const { entries, add: addEntry, remove: removeEntry, update: updateEntry } = entriesManager;
 
-  const [sl, setSl] = useState(185);
+  const [sl, setSl] = useState(0);
 
   // Multiple Take Profits (using custom hook)
-  const tpsManager = useEntryManager([{ price: 230, percent: 100 }]);
+  const tpsManager = useEntryManager([{ price: 0, percent: 100 }]);
   const { entries: tps, add: addTp, remove: removeTp, update: updateTp } = tpsManager;
 
   // Step 3: Leverage

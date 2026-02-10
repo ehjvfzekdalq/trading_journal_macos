@@ -43,6 +43,13 @@ impl SyncScheduler {
         // Get database from app state
         let db = self.app_handle.state::<Database>();
 
+        // Check if API connections feature is enabled
+        let feature_enabled = self.check_api_connections_feature(&db)?;
+        if !feature_enabled {
+            println!("API connections feature is disabled - skipping sync scheduler");
+            return Ok(());
+        }
+
         // Load all active credentials with auto-sync enabled
         let credentials = self.get_auto_sync_credentials(&db)?;
 
@@ -54,6 +61,21 @@ impl SyncScheduler {
         }
 
         Ok(())
+    }
+
+    /// Check if API connections feature is enabled in settings
+    fn check_api_connections_feature(&self, db: &Database) -> Result<bool, String> {
+        let conn = db.conn.lock().map_err(|e| e.to_string())?;
+
+        let enabled: i32 = conn
+            .query_row(
+                "SELECT enable_api_connections FROM settings WHERE id = 1",
+                [],
+                |row| row.get(0),
+            )
+            .map_err(|e| e.to_string())?;
+
+        Ok(enabled == 1)
     }
 
     /// Get all credentials that have auto-sync enabled and are active
@@ -136,6 +158,24 @@ impl SyncScheduler {
     /// Perform a sync for a credential
     async fn perform_sync(app_handle: &AppHandle, credential_id: &str) -> Result<(), String> {
         let db = app_handle.state::<Database>();
+
+        // Check if API connections feature is still enabled before syncing
+        let enabled = {
+            let conn = db.conn.lock().map_err(|e| e.to_string())?;
+            let enabled: i32 = conn
+                .query_row(
+                    "SELECT enable_api_connections FROM settings WHERE id = 1",
+                    [],
+                    |row| row.get(0),
+                )
+                .map_err(|e| e.to_string())?;
+            enabled
+        }; // conn is dropped here
+
+        if enabled == 0 {
+            println!("API connections feature is disabled - skipping sync for {}", credential_id);
+            return Ok(());
+        }
 
         // Create sync config with auto_sync flag
         let config = SyncConfig {

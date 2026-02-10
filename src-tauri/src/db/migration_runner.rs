@@ -122,6 +122,11 @@ impl MigrationRunner {
                 "add_execution_calculations",
                 include_str!("migrations/007_add_execution_calculations.sql"),
             ),
+            Migration::new(
+                8,
+                "add_feature_flags",
+                include_str!("migrations/008_add_feature_flags.sql"),
+            ),
         ]
     }
 

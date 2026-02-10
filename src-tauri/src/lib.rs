@@ -60,10 +60,41 @@ pub fn run() {
             api::credentials::init_storage(app_dir.clone())
                 .expect("Failed to initialize secure storage");
 
+            // Check feature flags after database initialization
+            let db = app.state::<db::Database>();
+            let (enable_position_monitor, enable_api_connections) = {
+                match db.conn.lock() {
+                    Ok(conn) => {
+                        let position_monitor: i32 = conn
+                            .query_row(
+                                "SELECT enable_position_monitor FROM settings WHERE id = 1",
+                                [],
+                                |row| row.get(0),
+                            )
+                            .unwrap_or(0);
+                        let api_connections: i32 = conn
+                            .query_row(
+                                "SELECT enable_api_connections FROM settings WHERE id = 1",
+                                [],
+                                |row| row.get(0),
+                            )
+                            .unwrap_or(0);
+                        (position_monitor == 1, api_connections == 1)
+                    }
+                    Err(e) => {
+                        eprintln!("Warning: Failed to check feature flags: {}", e);
+                        (false, false) // Default to disabled if we can't check
+                    }
+                }
+            };
+
+            println!("Feature flags - Position Monitor: {}, API Connections: {}",
+                     enable_position_monitor, enable_api_connections);
+
             // Initialize sync scheduler
             let scheduler = sync::SyncScheduler::new(app.handle().clone());
 
-            // Start scheduler in background
+            // Start scheduler in background (it will check the feature flag internally)
             let scheduler_clone = scheduler.clone();
             tauri::async_runtime::spawn(async move {
                 scheduler_clone.start().await;
@@ -74,6 +105,16 @@ pub fn run() {
 
             // Initialize live mirror manager
             let mirror_manager = Arc::new(api::LiveMirrorManager::new());
+
+            // If position monitor is disabled, ensure all live mirroring is stopped
+            if !enable_position_monitor {
+                println!("Position monitor feature is disabled - ensuring all live mirroring is stopped");
+                let mirror_manager_clone = mirror_manager.clone();
+                tauri::async_runtime::spawn(async move {
+                    mirror_manager_clone.stop_all().await;
+                });
+            }
+
             app.manage(mirror_manager);
 
             Ok(())

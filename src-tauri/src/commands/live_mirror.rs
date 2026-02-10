@@ -7,9 +7,27 @@ use crate::db::Database;
 #[tauri::command]
 pub async fn start_live_mirroring(
     app_handle: AppHandle,
+    db: State<'_, Database>,
     mirror_manager: State<'_, Arc<LiveMirrorManager>>,
     credential_id: String,
 ) -> Result<(), String> {
+    // Check if position monitor feature is enabled
+    let enabled = {
+        let conn = db.conn.lock().map_err(|e| e.to_string())?;
+        let enabled: i32 = conn
+            .query_row(
+                "SELECT enable_position_monitor FROM settings WHERE id = 1",
+                [],
+                |row| row.get(0),
+            )
+            .map_err(|e| e.to_string())?;
+        enabled
+    }; // conn is dropped here
+
+    if enabled == 0 {
+        return Err("Position monitoring feature is currently disabled".to_string());
+    }
+
     // Create Arc wrapper for database
     // Note: This is a simplified approach. In production, consider restructuring
     // to share the database connection more efficiently
@@ -56,7 +74,21 @@ pub async fn toggle_live_mirroring(
     credential_id: String,
     enabled: bool,
 ) -> Result<(), String> {
+    // Check if position monitor feature is enabled
     let conn = db.conn.lock().map_err(|e| e.to_string())?;
+    let feature_enabled: i32 = conn
+        .query_row(
+            "SELECT enable_position_monitor FROM settings WHERE id = 1",
+            [],
+            |row| row.get(0),
+        )
+        .map_err(|e| e.to_string())?;
+
+    if feature_enabled == 0 {
+        drop(conn);
+        return Err("Position monitoring feature is currently disabled".to_string());
+    }
+
     let now = chrono::Utc::now().timestamp();
 
     conn.execute(
