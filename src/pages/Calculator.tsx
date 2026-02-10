@@ -368,7 +368,7 @@ export default function Calculator() {
                       inputMode="decimal"
                       defaultValue={entry.price || ''}
                       onBlur={(e) => updateEntry(index, 'price', parseFloat(e.target.value) || 0)}
-                      placeholder="Price"
+                      placeholder="0.00"
                       className={`font-mono text-xs h-6 ${index === 0 && !entry.price ? 'field-required' : ''}`}
                     />
                     <Input
@@ -458,7 +458,7 @@ export default function Calculator() {
                       inputMode="decimal"
                       defaultValue={tp.price || ''}
                       onBlur={(e) => updateTp(index, 'price', parseFloat(e.target.value) || 0)}
-                      placeholder="Price"
+                      placeholder="0.00"
                       className={`font-mono text-xs h-6 ${index === 0 && !tp.price ? 'field-required' : ''}`}
                     />
                     <Input

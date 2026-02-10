@@ -92,7 +92,6 @@ export default function Help() {
       content: [
         { title: t('help.settingsTitle'), text: t('help.settingsContent') },
         { title: t('help.portfolioSettings'), text: t('help.portfolioSettingsContent'), pre: true },
-        { title: t('help.exchangeConnections'), text: t('help.exchangeConnectionsContent'), pre: true },
         { title: t('help.backupRestore'), text: t('help.backupRestoreContent'), pre: true },
         { title: t('help.dangerZone'), text: t('help.dangerZoneContent'), pre: true }
       ]

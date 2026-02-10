@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Calculator, BookOpen, Upload, Settings, HelpCircle, ChevronLeft, ChevronRight, ListOrdered } from 'lucide-react';
+import { LayoutDashboard, Calculator, BookOpen, Upload, Settings, HelpCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import nemesisLogo from '../assets/nemesis-logo.jpg';
 import { Button } from '../components/ui/button';
 
@@ -31,7 +31,6 @@ export default function Layout() {
     { name: t('nav.calculator'), path: '/calculator', icon: Calculator },
     { name: t('nav.journal'), path: '/journal', icon: BookOpen },
     { name: t('nav.import'), path: '/import', icon: Upload },
-    { name: 'Open Orders', path: '/open-orders', icon: ListOrdered },
     { name: t('nav.settings'), path: '/settings', icon: Settings },
     { name: t('nav.help'), path: '/help', icon: HelpCircle },
   ];
