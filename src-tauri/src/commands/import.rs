@@ -110,7 +110,8 @@ pub async fn import_bitget_csv(
                     let id = format!(
                         "TRADE-{}-{}",
                         Utc::now().timestamp_millis(),
-                        uuid::Uuid::new_v4().to_string().split('-').next().unwrap()
+                        uuid::Uuid::new_v4().to_string().split('-').next()
+                            .ok_or("Failed to generate trade ID from UUID")?
                     );
                     let now = Utc::now().timestamp();
 
@@ -294,8 +295,13 @@ fn parse_futures_field(futures: &str) -> Result<(String, String), String> {
     let re = regex::Regex::new(r"^([A-Z0-9]+USDT)\s+(Long|Short)").map_err(|e| e.to_string())?;
     let caps = re.captures(futures).ok_or("Invalid futures format")?;
 
-    let raw_pair = caps.get(1).unwrap().as_str();
-    let position_type = caps.get(2).unwrap().as_str().to_uppercase();
+    let raw_pair = caps.get(1)
+        .ok_or("Invalid futures format: missing pair")?
+        .as_str();
+    let position_type = caps.get(2)
+        .ok_or("Invalid futures format: missing position type")?
+        .as_str()
+        .to_uppercase();
 
     // Convert "INJUSDT" to "INJ/USDT"
     let pair = raw_pair.replace("USDT", "/USDT");
@@ -307,7 +313,9 @@ fn parse_numeric_value(value: &str) -> Result<f64, String> {
     // Extract number from string like "1645.2INJ" or "-90.354USDT"
     let re = regex::Regex::new(r"^(-?\d+\.?\d*)").map_err(|e| e.to_string())?;
     let caps = re.captures(value).ok_or("No numeric value found")?;
-    let num_str = caps.get(1).unwrap().as_str();
+    let num_str = caps.get(1)
+        .ok_or("Failed to extract numeric value from regex capture")?
+        .as_str();
     num_str.parse::<f64>().map_err(|e| e.to_string())
 }
 
@@ -361,7 +369,7 @@ pub async fn export_all_data(db: State<'_, Database>) -> Result<String, String> 
     // Get all trades
     let mut stmt = conn
         .prepare(
-            "SELECT id, pair, exchange, analysis_date, trade_date, close_date, status, portfolio_value, r_percent, min_rr, planned_pe, planned_sl, leverage, planned_tps, planned_entries, position_type, one_r, margin, position_size, quantity, planned_weighted_rr, effective_pe, effective_entries, exits, effective_weighted_rr, total_pnl, pnl_in_r, notes, import_fingerprint, import_source, created_at, updated_at FROM trades ORDER BY trade_date DESC",
+            "SELECT id, pair, exchange, analysis_date, trade_date, close_date, status, portfolio_value, r_percent, min_rr, planned_pe, planned_sl, leverage, planned_tps, planned_entries, position_type, one_r, margin, position_size, quantity, planned_weighted_rr, effective_pe, effective_entries, exits, effective_weighted_rr, total_pnl, pnl_in_r, notes, execution_portfolio, execution_r_percent, execution_margin, execution_position_size, execution_quantity, execution_one_r, execution_potential_profit, import_fingerprint, import_source, created_at, updated_at FROM trades ORDER BY trade_date DESC",
         )
         .map_err(|e| e.to_string())?;
 

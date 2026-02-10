@@ -11,7 +11,15 @@ export default function Layout() {
   const { t, i18n } = useTranslation();
   const [isCollapsed, setIsCollapsed] = useState(() => {
     const saved = localStorage.getItem('sidebar-collapsed');
-    return saved ? JSON.parse(saved) : false;
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error('Failed to parse sidebar-collapsed from localStorage:', e);
+        return false;
+      }
+    }
+    return false;
   });
 
   useEffect(() => {

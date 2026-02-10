@@ -435,7 +435,10 @@ export default function TradeNew() {
                       id="portfolio"
                       type="number"
                       value={portfolio}
-                      onChange={(e) => setPortfolio(parseFloat(e.target.value) || 0)}
+                      onChange={(e) => {
+                        const v = parseFloat(e.target.value);
+                        if (!isNaN(v) || e.target.value === '') setPortfolio(v || 0);
+                      }}
                       className="text-sm"
                     />
                   </div>
@@ -446,7 +449,10 @@ export default function TradeNew() {
                       type="number"
                       step="0.1"
                       value={rPercent}
-                      onChange={(e) => setRPercent(parseFloat(e.target.value) || 0)}
+                      onChange={(e) => {
+                        const v = parseFloat(e.target.value);
+                        if (!isNaN(v) || e.target.value === '') setRPercent(v || 0);
+                      }}
                       className="text-sm"
                     />
                   </div>
@@ -457,7 +463,10 @@ export default function TradeNew() {
                       type="number"
                       step="0.1"
                       value={minRR}
-                      onChange={(e) => setMinRR(parseFloat(e.target.value) || 0)}
+                      onChange={(e) => {
+                        const v = parseFloat(e.target.value);
+                        if (!isNaN(v) || e.target.value === '') setMinRR(v || 0);
+                      }}
                       className="text-sm"
                     />
                   </div>
@@ -511,7 +520,10 @@ export default function TradeNew() {
                             type="number"
                             step="0.00000001"
                             value={entry.price || ''}
-                            onChange={(e) => updatePlannedEntry(index, 'price', parseFloat(e.target.value) || 0)}
+                            onChange={(e) => {
+                              const v = parseFloat(e.target.value);
+                              if (!isNaN(v) || e.target.value === '') updatePlannedEntry(index, 'price', v || 0);
+                            }}
                             placeholder="0.00"
                             className={`font-mono text-sm ${index === 0 && !entry.price ? 'field-required' : ''}`}
                             required={index === 0}
@@ -527,7 +539,10 @@ export default function TradeNew() {
                             min="0"
                             max="100"
                             value={entry.percent || ''}
-                            onChange={(e) => updatePlannedEntry(index, 'percent', parseFloat(e.target.value) || 0)}
+                            onChange={(e) => {
+                              const v = parseFloat(e.target.value);
+                              if (!isNaN(v) || e.target.value === '') updatePlannedEntry(index, 'percent', v || 0);
+                            }}
                             placeholder="0"
                             className="text-sm"
                           />
@@ -575,7 +590,10 @@ export default function TradeNew() {
                       type="number"
                       step="0.00000001"
                       value={plannedSl || ''}
-                      onChange={(e) => setPlannedSl(parseFloat(e.target.value) || 0)}
+                      onChange={(e) => {
+                        const v = parseFloat(e.target.value);
+                        if (!isNaN(v) || e.target.value === '') setPlannedSl(v || 0);
+                      }}
                       className={`font-mono text-sm ${!plannedSl ? 'field-required' : ''}`}
                       placeholder={t('tradeNew.pricePlaceholder')}
                       required
@@ -587,7 +605,10 @@ export default function TradeNew() {
                       id="leverage"
                       type="number"
                       value={leverage}
-                      onChange={(e) => setLeverage(parseFloat(e.target.value) || 0)}
+                      onChange={(e) => {
+                        const v = parseFloat(e.target.value);
+                        if (!isNaN(v) || e.target.value === '') setLeverage(v || 0);
+                      }}
                       className={`text-sm ${planMetrics && planMetrics.maxLeverage !== null && leverage > planMetrics.maxLeverage ? 'border-destructive' : ''}`}
                     />
                     {planMetrics && (
@@ -638,9 +659,12 @@ export default function TradeNew() {
                         step="0.00000001"
                         value={tp.price || ''}
                         onChange={(e) => {
-                          const newTps = [...plannedTps];
-                          newTps[index].price = parseFloat(e.target.value) || 0;
-                          setPlannedTps(newTps);
+                          const v = parseFloat(e.target.value);
+                          if (!isNaN(v) || e.target.value === '') {
+                            const newTps = [...plannedTps];
+                            newTps[index].price = v || 0;
+                            setPlannedTps(newTps);
+                          }
                         }}
                         placeholder={t('tradeNew.pricePlaceholder')}
                         className={`font-mono text-sm ${index === 0 && !tp.price ? 'field-required' : ''}`}
@@ -656,9 +680,12 @@ export default function TradeNew() {
                         max="100"
                         value={tp.percent || ''}
                         onChange={(e) => {
-                          const newTps = [...plannedTps];
-                          newTps[index].percent = parseFloat(e.target.value) || 0;
-                          setPlannedTps(newTps);
+                          const v = parseFloat(e.target.value);
+                          if (!isNaN(v) || e.target.value === '') {
+                            const newTps = [...plannedTps];
+                            newTps[index].percent = v || 0;
+                            setPlannedTps(newTps);
+                          }
                         }}
                         placeholder={t('tradeNew.percentPlaceholder')}
                         className="text-sm"
@@ -790,7 +817,10 @@ export default function TradeNew() {
                           type="number"
                           step="0.00000001"
                           value={entry.price || ''}
-                          onChange={(e) => updateEffectiveEntry(index, 'price', parseFloat(e.target.value) || 0)}
+                          onChange={(e) => {
+                            const v = parseFloat(e.target.value);
+                            if (!isNaN(v) || e.target.value === '') updateEffectiveEntry(index, 'price', v || 0);
+                          }}
                           placeholder="0.00"
                           className="font-mono text-sm"
                         />
@@ -805,7 +835,10 @@ export default function TradeNew() {
                           min="0"
                           max="100"
                           value={entry.percent || ''}
-                          onChange={(e) => updateEffectiveEntry(index, 'percent', parseFloat(e.target.value) || 0)}
+                          onChange={(e) => {
+                            const v = parseFloat(e.target.value);
+                            if (!isNaN(v) || e.target.value === '') updateEffectiveEntry(index, 'percent', v || 0);
+                          }}
                           placeholder="0"
                           className="text-sm"
                         />
@@ -865,7 +898,10 @@ export default function TradeNew() {
                           type="number"
                           step="0.01"
                           value={executionPortfolio || ''}
-                          onChange={(e) => setExecutionPortfolio(parseFloat(e.target.value) || 0)}
+                          onChange={(e) => {
+                            const v = parseFloat(e.target.value);
+                            if (!isNaN(v) || e.target.value === '') setExecutionPortfolio(v || 0);
+                          }}
                           placeholder={portfolio.toString()}
                           className="font-mono text-sm"
                         />
@@ -882,7 +918,10 @@ export default function TradeNew() {
                           min="0"
                           max="100"
                           value={executionRPercent || ''}
-                          onChange={(e) => setExecutionRPercent(parseFloat(e.target.value) || 0)}
+                          onChange={(e) => {
+                            const v = parseFloat(e.target.value);
+                            if (!isNaN(v) || e.target.value === '') setExecutionRPercent(v || 0);
+                          }}
                           placeholder={rPercent.toString()}
                           className="font-mono text-sm"
                         />
@@ -997,9 +1036,12 @@ export default function TradeNew() {
                           step="0.00000001"
                           value={exit.price || ''}
                           onChange={(e) => {
-                            const newExits = [...exits];
-                            newExits[index].price = parseFloat(e.target.value) || 0;
-                            setExits(newExits);
+                            const v = parseFloat(e.target.value);
+                            if (!isNaN(v) || e.target.value === '') {
+                              const newExits = [...exits];
+                              newExits[index].price = v || 0;
+                              setExits(newExits);
+                            }
                           }}
                           placeholder={t('tradeNew.pricePlaceholder')}
                           className="font-mono text-sm"
@@ -1014,9 +1056,12 @@ export default function TradeNew() {
                           max="100"
                           value={exit.percent || ''}
                           onChange={(e) => {
-                            const newExits = [...exits];
-                            newExits[index].percent = parseFloat(e.target.value) || 0;
-                            setExits(newExits);
+                            const v = parseFloat(e.target.value);
+                            if (!isNaN(v) || e.target.value === '') {
+                              const newExits = [...exits];
+                              newExits[index].percent = v || 0;
+                              setExits(newExits);
+                            }
                           }}
                           placeholder={t('tradeNew.percentPlaceholder')}
                           className="text-sm"

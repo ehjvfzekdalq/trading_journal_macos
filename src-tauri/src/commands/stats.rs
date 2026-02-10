@@ -58,6 +58,9 @@ pub async fn get_dashboard_stats(
     };
 
     // Build filter clause and params
+    // SAFETY: date_filter is always a compile-time constant string ("AND close_date >= ?" or ""),
+    // never user-provided input. This pattern is safe from SQL injection as long as date_filter
+    // remains a hardcoded string. All dynamic values are passed through parameterized queries.
     let (date_filter, date_params): (&str, Vec<i64>) = match date_threshold {
         Some(threshold) => ("AND close_date >= ?", vec![threshold]),
         None => ("", vec![]),
@@ -65,32 +68,32 @@ pub async fn get_dashboard_stats(
 
     // Total trades
     let total_trades: i32 = conn.query_row(
-        &format!("SELECT COUNT(*) FROM trades WHERE 1=1 {}", date_filter),
+        &format!("SELECT COUNT(*) FROM trades WHERE deleted_at IS NULL {}", date_filter),
         rusqlite::params_from_iter(date_params.iter()),
         |row| row.get(0),
     ).unwrap_or(0);
 
     // Status counts
     let wins: i32 = conn.query_row(
-        &format!("SELECT COUNT(*) FROM trades WHERE status = 'WIN' {}", date_filter),
+        &format!("SELECT COUNT(*) FROM trades WHERE deleted_at IS NULL AND status = 'WIN' {}", date_filter),
         rusqlite::params_from_iter(date_params.iter()),
         |row| row.get(0),
     ).unwrap_or(0);
 
     let losses: i32 = conn.query_row(
-        &format!("SELECT COUNT(*) FROM trades WHERE status = 'LOSS' {}", date_filter),
+        &format!("SELECT COUNT(*) FROM trades WHERE deleted_at IS NULL AND status = 'LOSS' {}", date_filter),
         rusqlite::params_from_iter(date_params.iter()),
         |row| row.get(0),
     ).unwrap_or(0);
 
     let breakevens: i32 = conn.query_row(
-        &format!("SELECT COUNT(*) FROM trades WHERE status = 'BE' {}", date_filter),
+        &format!("SELECT COUNT(*) FROM trades WHERE deleted_at IS NULL AND status = 'BE' {}", date_filter),
         rusqlite::params_from_iter(date_params.iter()),
         |row| row.get(0),
     ).unwrap_or(0);
 
     let open_trades: i32 = conn.query_row(
-        "SELECT COUNT(*) FROM trades WHERE status = 'OPEN'",
+        "SELECT COUNT(*) FROM trades WHERE deleted_at IS NULL AND status = 'OPEN'",
         [],
         |row| row.get(0),
     ).unwrap_or(0);
@@ -105,21 +108,21 @@ pub async fn get_dashboard_stats(
 
     // Total P&L
     let total_pnl: f64 = conn.query_row(
-        &format!("SELECT COALESCE(SUM(total_pnl), 0.0) FROM trades WHERE total_pnl IS NOT NULL {}", date_filter),
+        &format!("SELECT COALESCE(SUM(total_pnl), 0.0) FROM trades WHERE deleted_at IS NULL AND total_pnl IS NOT NULL {}", date_filter),
         rusqlite::params_from_iter(date_params.iter()),
         |row| row.get(0),
     ).unwrap_or(0.0);
 
     // Gross profit
     let gross_profit: f64 = conn.query_row(
-        &format!("SELECT COALESCE(SUM(total_pnl), 0.0) FROM trades WHERE total_pnl > 0 {}", date_filter),
+        &format!("SELECT COALESCE(SUM(total_pnl), 0.0) FROM trades WHERE deleted_at IS NULL AND total_pnl > 0 {}", date_filter),
         rusqlite::params_from_iter(date_params.iter()),
         |row| row.get(0),
     ).unwrap_or(0.0);
 
     // Gross loss
     let gross_loss: f64 = conn.query_row(
-        &format!("SELECT COALESCE(ABS(SUM(total_pnl)), 0.0) FROM trades WHERE total_pnl < 0 {}", date_filter),
+        &format!("SELECT COALESCE(ABS(SUM(total_pnl)), 0.0) FROM trades WHERE deleted_at IS NULL AND total_pnl < 0 {}", date_filter),
         rusqlite::params_from_iter(date_params.iter()),
         |row| row.get(0),
     ).unwrap_or(0.0);
@@ -135,21 +138,21 @@ pub async fn get_dashboard_stats(
 
     // Average effective RR
     let avg_effective_rr: f64 = conn.query_row(
-        &format!("SELECT COALESCE(AVG(effective_weighted_rr), 0.0) FROM trades WHERE effective_weighted_rr IS NOT NULL {}", date_filter),
+        &format!("SELECT COALESCE(AVG(effective_weighted_rr), 0.0) FROM trades WHERE deleted_at IS NULL AND effective_weighted_rr IS NOT NULL {}", date_filter),
         rusqlite::params_from_iter(date_params.iter()),
         |row| row.get(0),
     ).unwrap_or(0.0);
 
     // Best trade
     let best_trade: f64 = conn.query_row(
-        &format!("SELECT COALESCE(MAX(total_pnl), 0.0) FROM trades WHERE total_pnl IS NOT NULL {}", date_filter),
+        &format!("SELECT COALESCE(MAX(total_pnl), 0.0) FROM trades WHERE deleted_at IS NULL AND total_pnl IS NOT NULL {}", date_filter),
         rusqlite::params_from_iter(date_params.iter()),
         |row| row.get(0),
     ).unwrap_or(0.0);
 
     // Worst trade
     let worst_trade: f64 = conn.query_row(
-        &format!("SELECT COALESCE(MIN(total_pnl), 0.0) FROM trades WHERE total_pnl IS NOT NULL {}", date_filter),
+        &format!("SELECT COALESCE(MIN(total_pnl), 0.0) FROM trades WHERE deleted_at IS NULL AND total_pnl IS NOT NULL {}", date_filter),
         rusqlite::params_from_iter(date_params.iter()),
         |row| row.get(0),
     ).unwrap_or(0.0);
@@ -202,6 +205,9 @@ pub async fn get_equity_curve(
     };
 
     // Build filter clause and params
+    // SAFETY: date_filter is always a compile-time constant string ("AND close_date >= ?" or ""),
+    // never user-provided input. This pattern is safe from SQL injection as long as date_filter
+    // remains a hardcoded string. All dynamic values are passed through parameterized queries.
     let (date_filter, date_params): (&str, Vec<i64>) = match date_threshold {
         Some(threshold) => ("AND close_date >= ?", vec![threshold]),
         None => ("", vec![]),
@@ -234,7 +240,7 @@ pub async fn get_equity_curve(
 
         // Convert timestamp to date string (YYYY-MM-DD)
         let date = chrono::DateTime::from_timestamp(close_timestamp, 0)
-            .ok_or("Invalid timestamp")?
+            .ok_or(format!("Invalid timestamp: {} for trade with close_date {}", close_timestamp, close_timestamp))?
             .format("%Y-%m-%d")
             .to_string();
 

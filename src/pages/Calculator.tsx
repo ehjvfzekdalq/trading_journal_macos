@@ -251,7 +251,10 @@ export default function Calculator() {
                 id="portfolio"
                 type="number"
                 value={portfolio}
-                onChange={(e) => setPortfolio(parseFloat(e.target.value) || 0)}
+                onChange={(e) => {
+                  const v = parseFloat(e.target.value);
+                  if (!isNaN(v) || e.target.value === '') setPortfolio(v || 0);
+                }}
                 className="h-8 text-sm font-semibold"
               />
             </div>
@@ -264,7 +267,10 @@ export default function Calculator() {
                 type="number"
                 step="0.1"
                 value={rPercent}
-                onChange={(e) => setRPercent(parseFloat(e.target.value) || 0)}
+                onChange={(e) => {
+                  const v = parseFloat(e.target.value);
+                  if (!isNaN(v) || e.target.value === '') setRPercent(v || 0);
+                }}
                 className="h-8 text-sm font-semibold"
               />
             </div>
@@ -277,7 +283,10 @@ export default function Calculator() {
                 type="number"
                 step="0.1"
                 value={minRR}
-                onChange={(e) => setMinRR(parseFloat(e.target.value) || 0)}
+                onChange={(e) => {
+                  const v = parseFloat(e.target.value);
+                  if (!isNaN(v) || e.target.value === '') setMinRR(v || 0);
+                }}
                 className="h-8 text-sm font-semibold"
               />
             </div>
@@ -361,7 +370,10 @@ export default function Calculator() {
                       type="number"
                       step="0.00000001"
                       value={entry.price || ''}
-                      onChange={(e) => updateEntry(index, 'price', parseFloat(e.target.value) || 0)}
+                      onChange={(e) => {
+                        const v = parseFloat(e.target.value);
+                        if (!isNaN(v) || e.target.value === '') updateEntry(index, 'price', v || 0);
+                      }}
                       placeholder="Price"
                       className={`font-mono text-xs h-6 ${index === 0 && !entry.price ? 'field-required' : ''}`}
                     />
@@ -370,7 +382,10 @@ export default function Calculator() {
                       min="0"
                       max="100"
                       value={entry.percent || ''}
-                      onChange={(e) => updateEntry(index, 'percent', parseFloat(e.target.value) || 0)}
+                      onChange={(e) => {
+                        const v = parseFloat(e.target.value);
+                        if (!isNaN(v) || e.target.value === '') updateEntry(index, 'percent', v || 0);
+                      }}
                       disabled={!entry.price}
                       placeholder="%"
                       className="text-xs h-6"
@@ -410,7 +425,10 @@ export default function Calculator() {
                 type="number"
                 step="0.00000001"
                 value={sl}
-                onChange={(e) => setSl(parseFloat(e.target.value) || 0)}
+                onChange={(e) => {
+                  const v = parseFloat(e.target.value);
+                  if (!isNaN(v) || e.target.value === '') setSl(v || 0);
+                }}
                 className={`font-mono text-xs h-7 ${!sl ? 'field-required' : ''}`}
                 placeholder="0.00"
               />
@@ -452,7 +470,10 @@ export default function Calculator() {
                       type="number"
                       step="0.00000001"
                       value={tp.price || ''}
-                      onChange={(e) => updateTp(index, 'price', parseFloat(e.target.value) || 0)}
+                      onChange={(e) => {
+                        const v = parseFloat(e.target.value);
+                        if (!isNaN(v) || e.target.value === '') updateTp(index, 'price', v || 0);
+                      }}
                       placeholder="Price"
                       className={`font-mono text-xs h-6 ${index === 0 && !tp.price ? 'field-required' : ''}`}
                     />
@@ -461,7 +482,10 @@ export default function Calculator() {
                       min="0"
                       max="100"
                       value={tp.percent || ''}
-                      onChange={(e) => updateTp(index, 'percent', parseFloat(e.target.value) || 0)}
+                      onChange={(e) => {
+                        const v = parseFloat(e.target.value);
+                        if (!isNaN(v) || e.target.value === '') updateTp(index, 'percent', v || 0);
+                      }}
                       disabled={!tp.price}
                       placeholder="%"
                       className="text-xs h-6"
@@ -558,7 +582,10 @@ export default function Calculator() {
                 min="1"
                 max="125"
                 value={leverage}
-                onChange={(e) => setLeverage(parseFloat(e.target.value) || 0)}
+                onChange={(e) => {
+                  const v = parseFloat(e.target.value);
+                  if (!isNaN(v) || e.target.value === '') setLeverage(v || 0);
+                }}
                 className="h-7 text-sm font-semibold"
               />
             </div>

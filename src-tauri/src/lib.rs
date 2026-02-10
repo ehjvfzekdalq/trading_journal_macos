@@ -116,6 +116,15 @@ pub fn run() {
             commands::toggle_live_mirroring,
             commands::get_live_mirroring_status,
         ])
+        .on_window_event(|window, event| {
+            if let tauri::WindowEvent::CloseRequested { .. } = event {
+                // Cleanup live mirror connections on window close
+                let mirror_manager = window.state::<Arc<api::LiveMirrorManager>>();
+                tauri::async_runtime::block_on(async {
+                    mirror_manager.stop_all().await;
+                });
+            }
+        })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

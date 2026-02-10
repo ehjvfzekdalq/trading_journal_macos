@@ -73,7 +73,9 @@ export function calculateDistances(
  */
 export function calculateRR(distanceTP_USD: number, distanceSL_USD: number): number | null {
   if (distanceSL_USD === 0) return null;
-  return Math.abs(distanceTP_USD) / Math.abs(distanceSL_USD);
+  const result = Math.abs(distanceTP_USD) / Math.abs(distanceSL_USD);
+  if (!isFinite(result)) return null;
+  return result;
 }
 
 /**
@@ -81,7 +83,9 @@ export function calculateRR(distanceTP_USD: number, distanceSL_USD: number): num
  */
 export function calculateMaxLeverage(distanceSL_PCT: number): number | null {
   if (distanceSL_PCT === 0) return null;
-  return Math.floor(1 / distanceSL_PCT);
+  const result = Math.floor(1 / distanceSL_PCT);
+  if (!isFinite(result)) return null;
+  return result;
 }
 
 /**
@@ -223,8 +227,10 @@ export function calculateProfitFactor(
       .reduce((sum, t) => sum + (t.totalPnL || 0), 0)
   );
 
-  if (grossLoss === 0) return grossProfit > 0 ? Infinity : 0;
-  return grossProfit / grossLoss;
+  if (grossLoss === 0) return grossProfit > 0 ? null : 0;
+  const result = grossProfit / grossLoss;
+  if (!isFinite(result)) return null;
+  return result;
 }
 
 /**

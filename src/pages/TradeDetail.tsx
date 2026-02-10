@@ -204,10 +204,15 @@ export default function TradeDetail() {
       setLeverage(data.leverage);
 
       // Parse planned TPs
-      const parsedPlannedTps = typeof data.planned_tps === 'string'
-        ? JSON.parse(data.planned_tps)
-        : data.planned_tps;
-      setPlannedTps(parsedPlannedTps);
+      try {
+        const parsedPlannedTps = typeof data.planned_tps === 'string'
+          ? JSON.parse(data.planned_tps)
+          : data.planned_tps;
+        setPlannedTps(parsedPlannedTps);
+      } catch (e) {
+        console.error('Failed to parse planned_tps:', e);
+        setPlannedTps([]);
+      }
 
       // Initialize execution fields
       setEffectivePe(data.effective_pe || data.planned_pe);
@@ -677,7 +682,10 @@ export default function TradeDetail() {
                           type="number"
                           step="0.00000001"
                           value={entry.price || ''}
-                          onChange={(e) => updatePlannedEntry(index, 'price', parseFloat(e.target.value) || 0)}
+                          onChange={(e) => {
+                            const v = parseFloat(e.target.value);
+                            if (!isNaN(v) || e.target.value === '') updatePlannedEntry(index, 'price', v || 0);
+                          }}
                           placeholder="0.00"
                           className="font-mono text-sm"
                           required={index === 0}
@@ -693,7 +701,10 @@ export default function TradeDetail() {
                           min="0"
                           max="100"
                           value={entry.percent || ''}
-                          onChange={(e) => updatePlannedEntry(index, 'percent', parseFloat(e.target.value) || 0)}
+                          onChange={(e) => {
+                            const v = parseFloat(e.target.value);
+                            if (!isNaN(v) || e.target.value === '') updatePlannedEntry(index, 'percent', v || 0);
+                          }}
                           disabled={!entry.price}
                           placeholder="0"
                           className="text-sm"
@@ -719,7 +730,10 @@ export default function TradeDetail() {
                     type="number"
                     step="0.00000001"
                     value={plannedSl || ''}
-                    onChange={(e) => setPlannedSl(parseFloat(e.target.value) || 0)}
+                    onChange={(e) => {
+                      const v = parseFloat(e.target.value);
+                      if (!isNaN(v) || e.target.value === '') setPlannedSl(v || 0);
+                    }}
                     className="font-mono text-sm"
                     placeholder="0.00"
                     required
@@ -731,7 +745,10 @@ export default function TradeDetail() {
                     id="leverage"
                     type="number"
                     value={leverage}
-                    onChange={(e) => setLeverage(parseFloat(e.target.value) || 0)}
+                    onChange={(e) => {
+                      const v = parseFloat(e.target.value);
+                      if (!isNaN(v) || e.target.value === '') setLeverage(v || 0);
+                    }}
                     className="text-sm"
                   />
                 </div>
@@ -752,10 +769,13 @@ export default function TradeDetail() {
                         step="0.00000001"
                         value={tp.price || ''}
                         onChange={(e) => {
-                          const newTps = [...plannedTps];
-                          if (index >= 0 && index < newTps.length) {
-                            newTps[index].price = parseFloat(e.target.value) || 0;
-                            setPlannedTps(newTps);
+                          const v = parseFloat(e.target.value);
+                          if (!isNaN(v) || e.target.value === '') {
+                            const newTps = [...plannedTps];
+                            if (index >= 0 && index < newTps.length) {
+                              newTps[index].price = v || 0;
+                              setPlannedTps(newTps);
+                            }
                           }
                         }}
                         placeholder="0.00"
@@ -772,10 +792,13 @@ export default function TradeDetail() {
                         max="100"
                         value={tp.percent || ''}
                         onChange={(e) => {
-                          const newTps = [...plannedTps];
-                          if (index >= 0 && index < newTps.length) {
-                            newTps[index].percent = parseFloat(e.target.value) || 0;
-                            setPlannedTps(newTps);
+                          const v = parseFloat(e.target.value);
+                          if (!isNaN(v) || e.target.value === '') {
+                            const newTps = [...plannedTps];
+                            if (index >= 0 && index < newTps.length) {
+                              newTps[index].percent = v || 0;
+                              setPlannedTps(newTps);
+                            }
                           }
                         }}
                         disabled={!tp.price}
@@ -889,7 +912,10 @@ export default function TradeDetail() {
                           type="number"
                           step="0.00000001"
                           value={entry.price || ''}
-                          onChange={(e) => updateEffectiveEntry(index, 'price', parseFloat(e.target.value) || 0)}
+                          onChange={(e) => {
+                            const v = parseFloat(e.target.value);
+                            if (!isNaN(v) || e.target.value === '') updateEffectiveEntry(index, 'price', v || 0);
+                          }}
                           placeholder="0.00"
                           className="font-mono text-sm"
                         />
@@ -904,7 +930,10 @@ export default function TradeDetail() {
                           min="0"
                           max="100"
                           value={entry.percent || ''}
-                          onChange={(e) => updateEffectiveEntry(index, 'percent', parseFloat(e.target.value) || 0)}
+                          onChange={(e) => {
+                            const v = parseFloat(e.target.value);
+                            if (!isNaN(v) || e.target.value === '') updateEffectiveEntry(index, 'percent', v || 0);
+                          }}
                           disabled={!entry.price}
                           placeholder="0"
                           className="text-sm"
@@ -965,7 +994,10 @@ export default function TradeDetail() {
                           type="number"
                           step="0.01"
                           value={executionPortfolio || ''}
-                          onChange={(e) => setExecutionPortfolio(parseFloat(e.target.value) || 0)}
+                          onChange={(e) => {
+                            const v = parseFloat(e.target.value);
+                            if (!isNaN(v) || e.target.value === '') setExecutionPortfolio(v || 0);
+                          }}
                           placeholder={trade?.portfolio_value.toString() || '0'}
                           className="font-mono text-sm"
                         />
@@ -982,7 +1014,10 @@ export default function TradeDetail() {
                           min="0"
                           max="100"
                           value={executionRPercent || ''}
-                          onChange={(e) => setExecutionRPercent(parseFloat(e.target.value) || 0)}
+                          onChange={(e) => {
+                            const v = parseFloat(e.target.value);
+                            if (!isNaN(v) || e.target.value === '') setExecutionRPercent(v || 0);
+                          }}
                           placeholder={trade ? (trade.r_percent * 100).toString() : '0'}
                           className="font-mono text-sm"
                         />
@@ -1045,10 +1080,13 @@ export default function TradeDetail() {
                           step="0.00000001"
                           value={exit.price || ''}
                           onChange={(e) => {
-                            const newExits = [...exits];
-                            if (index >= 0 && index < newExits.length) {
-                              newExits[index].price = parseFloat(e.target.value) || 0;
-                              setExits(newExits);
+                            const v = parseFloat(e.target.value);
+                            if (!isNaN(v) || e.target.value === '') {
+                              const newExits = [...exits];
+                              if (index >= 0 && index < newExits.length) {
+                                newExits[index].price = v || 0;
+                                setExits(newExits);
+                              }
                             }
                           }}
                           placeholder={t('tradeNew.pricePlaceholder')}
@@ -1064,10 +1102,13 @@ export default function TradeDetail() {
                           max="100"
                           value={exit.percent || ''}
                           onChange={(e) => {
-                            const newExits = [...exits];
-                            if (index >= 0 && index < newExits.length) {
-                              newExits[index].percent = parseFloat(e.target.value) || 0;
-                              setExits(newExits);
+                            const v = parseFloat(e.target.value);
+                            if (!isNaN(v) || e.target.value === '') {
+                              const newExits = [...exits];
+                              if (index >= 0 && index < newExits.length) {
+                                newExits[index].percent = v || 0;
+                                setExits(newExits);
+                              }
                             }
                           }}
                           placeholder={t('tradeNew.percentPlaceholder')}
