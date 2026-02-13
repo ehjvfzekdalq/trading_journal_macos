@@ -182,6 +182,7 @@
     "copy": "Copy",
     "copied": "Copied!",
     "validationErrors": "Validation Errors",
+    "warnings": "Warnings",
     "calculatedResults": "Calculated Results",
     "setLeverage": "Set your Leverage",
     "helpStrategyTitle": "Strategy Settings",

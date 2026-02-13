@@ -147,7 +147,7 @@ export default function TradeNew() {
   // Calculate metrics for plan (memoized for performance)
   const planCalculation = useMemo(() => {
     let planMetrics = null;
-    let planValidation = { valid: false, errors: [] as string[] };
+    let planValidation = { valid: false, errors: [] as string[], warnings: [] as string[] };
 
     try {
       // Validate planned entries
@@ -159,6 +159,7 @@ export default function TradeNew() {
         const tpValidation = validateAllocation(plannedTps);
 
         planValidation.errors = [];
+        planValidation.warnings = [];
 
         // Validate entries
         if (validEntries.length === 0 && !plannedPe) {
@@ -188,8 +189,9 @@ export default function TradeNew() {
             leverage,
           });
 
+          // R:R check is now a warning, not a blocking error
           if (planMetrics.plannedWeightedRR < minRR) {
-            planValidation.errors.push(`RR (${planMetrics.plannedWeightedRR.toFixed(2)}) is below minimum (${minRR})`);
+            planValidation.warnings.push(`RR (${planMetrics.plannedWeightedRR.toFixed(2)}) is below minimum (${minRR})`);
           }
           if (planMetrics.maxLeverage !== null && leverage > planMetrics.maxLeverage) {
             planValidation.errors.push(`Leverage (${leverage}x) exceeds max (${planMetrics.maxLeverage}x)`);
@@ -627,7 +629,7 @@ export default function TradeNew() {
                   </div>
                 </div>
 
-                {/* Validation Warnings */}
+                {/* Validation Errors */}
                 {planValidation.errors.length > 0 && (
                   <div className="mt-3 p-3 bg-destructive/10 border border-destructive/20 rounded-md">
                     <div className="flex items-start gap-2">
@@ -636,6 +638,22 @@ export default function TradeNew() {
                         {planValidation.errors.map((error, idx) => (
                           <div key={idx} className="text-sm text-destructive">
                             {error}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Validation Warnings (non-blocking) */}
+                {planValidation.warnings && planValidation.warnings.length > 0 && (
+                  <div className="mt-3 p-3 bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-500/50 rounded-md">
+                    <div className="flex items-start gap-2">
+                      <AlertCircle className="h-4 w-4 text-yellow-600 mt-0.5" />
+                      <div className="flex-1 space-y-1">
+                        {planValidation.warnings.map((warning, idx) => (
+                          <div key={idx} className="text-sm text-yellow-700 dark:text-yellow-500">
+                            {warning}
                           </div>
                         ))}
                       </div>
@@ -704,6 +722,21 @@ export default function TradeNew() {
                     <ul className="space-y-1">
                       {planValidation.errors.map((error, i) => (
                         <li key={i} className="text-destructive">• {error}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              )}
+
+              {/* Validation Warnings (non-blocking) */}
+              {planValidation.warnings && planValidation.warnings.length > 0 && (
+                <div className="flex items-start gap-2 p-3 rounded-lg bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-500/50">
+                  <AlertCircle className="h-5 w-5 text-yellow-600 shrink-0 mt-0.5" />
+                  <div className="text-sm">
+                    <div className="font-semibold text-yellow-700 dark:text-yellow-500 mb-1">{t('calculator.warnings') || 'Warnings'}:</div>
+                    <ul className="space-y-1">
+                      {planValidation.warnings.map((warning, i) => (
+                        <li key={i} className="text-yellow-700 dark:text-yellow-500">• {warning}</li>
                       ))}
                     </ul>
                   </div>
