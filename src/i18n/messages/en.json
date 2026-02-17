@@ -38,12 +38,12 @@
     "noTradesMessage": "No trades yet. Create your first trade to get started!",
     "dateRange": {
       "today": "Today",
-      "lastWeek": "Last Week",
-      "lastMonth": "Last Month",
-      "3months": "3 Months",
-      "6months": "6 Months",
-      "year": "Year",
-      "allTime": "All Time"
+      "lastWeek": "Last W",
+      "lastMonth": "Last M",
+      "3months": "3M",
+      "6months": "6M",
+      "year": "1Y",
+      "allTime": "All"
     }
   },
   "journal": {
@@ -763,5 +763,19 @@
   "ui": {
     "weightedEntry": "Weighted Average Entry",
     "helpBadge": "View help"
+  },
+  "positionMetrics": {
+    "title": "Position Metrics",
+    "cost": "Cost",
+    "costTooltip": "Total position value (margin × leverage)",
+    "margin": "Margin",
+    "marginTooltip": "Required margin for this position",
+    "position": "Position",
+    "positionTooltip": "Number of contracts or coins",
+    "oneR": "1R",
+    "oneRTooltip": "Actual dollar risk at stop loss",
+    "calculated": "Calculated from other fields",
+    "invalidValue": "Invalid value",
+    "missingData": "Entry price and stop loss required"
   }
 }

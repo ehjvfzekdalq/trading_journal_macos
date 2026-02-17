@@ -38,11 +38,11 @@
     "noTradesMessage": "Aucun trade pour l'instant. Créez votre premier trade pour commencer !",
     "dateRange": {
       "today": "Aujourd'hui",
-      "lastWeek": "Semaine Dernière",
-      "lastMonth": "Mois Dernier",
-      "3months": "3 Mois",
-      "6months": "6 Mois",
-      "year": "Année",
+      "lastWeek": "Dern. S",
+      "lastMonth": "Dern. M",
+      "3months": "3M",
+      "6months": "6M",
+      "year": "1A",
       "allTime": "Tout"
     }
   },
@@ -759,5 +759,19 @@
   "ui": {
     "weightedEntry": "Prix Moyen Pondéré d'Entrée",
     "helpBadge": "Voir l'aide"
+  },
+  "positionMetrics": {
+    "title": "Métriques de Position",
+    "cost": "Coût",
+    "costTooltip": "Valeur totale de la position (marge × levier)",
+    "margin": "Marge",
+    "marginTooltip": "Marge requise pour cette position",
+    "position": "Position",
+    "positionTooltip": "Nombre de contrats ou pièces",
+    "oneR": "1R",
+    "oneRTooltip": "Risque réel en dollars au stop loss",
+    "calculated": "Calculé à partir des autres champs",
+    "invalidValue": "Valeur invalide",
+    "missingData": "Prix d'entrée et stop loss requis"
   }
 }

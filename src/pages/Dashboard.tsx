@@ -86,33 +86,37 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight flex items-center gap-2">
             {t('dashboard.title')}
             <HelpBadge section="dashboard" />
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-sm sm:text-base text-muted-foreground">
             {t('dashboard.subtitle')}
           </p>
         </div>
 
         {/* Date Range Filter */}
-        <div className="flex items-center gap-2 flex-wrap">
-          <AnonymousToggle />
-          <Calendar className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-          <div className="flex flex-wrap gap-1 border rounded-lg p-1">
-            {dateRangeOptions.map((option) => (
-              <Button
-                key={option.value}
-                variant={dateRange === option.value ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setDateRange(option.value)}
-                className="h-7 text-xs"
-              >
-                {option.label}
-              </Button>
-            ))}
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <Calendar className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+            <div className="overflow-x-auto scrollbar-thin flex-1 sm:flex-none">
+              <div className="flex gap-1 border rounded-lg p-1 w-max sm:w-auto">
+                {dateRangeOptions.map((option) => (
+                  <Button
+                    key={option.value}
+                    variant={dateRange === option.value ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setDateRange(option.value)}
+                    className="h-7 text-xs whitespace-nowrap"
+                  >
+                    {option.label}
+                  </Button>
+                ))}
+              </div>
+            </div>
+            <AnonymousToggle />
           </div>
         </div>
       </div>

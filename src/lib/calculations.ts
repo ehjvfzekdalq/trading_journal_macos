@@ -404,3 +404,71 @@ export function calculateExecutionMetrics(params: {
     effectiveRR,
   };
 }
+
+/**
+ * Calculate position metrics starting from margin
+ */
+export function calculateFromMargin(
+  margin: number,
+  leverage: number,
+  entryPrice: number,
+  stopLoss: number,
+  _positionType: PositionType
+): { positionSize: number; quantity: number; oneR: number } {
+  const positionSize = margin * leverage;
+  const quantity = positionSize / entryPrice;
+  const distanceSL_PCT = Math.abs(entryPrice - stopLoss) / entryPrice;
+  const oneR = positionSize * distanceSL_PCT;
+  return { positionSize, quantity, oneR };
+}
+
+/**
+ * Calculate position metrics starting from position size
+ */
+export function calculateFromPositionSize(
+  positionSize: number,
+  leverage: number,
+  entryPrice: number,
+  stopLoss: number,
+  _positionType: PositionType
+): { margin: number; quantity: number; oneR: number } {
+  const margin = positionSize / leverage;
+  const quantity = positionSize / entryPrice;
+  const distanceSL_PCT = Math.abs(entryPrice - stopLoss) / entryPrice;
+  const oneR = positionSize * distanceSL_PCT;
+  return { margin, quantity, oneR };
+}
+
+/**
+ * Calculate position metrics starting from quantity
+ */
+export function calculateFromQuantity(
+  quantity: number,
+  leverage: number,
+  entryPrice: number,
+  stopLoss: number,
+  _positionType: PositionType
+): { margin: number; positionSize: number; oneR: number } {
+  const positionSize = quantity * entryPrice;
+  const margin = positionSize / leverage;
+  const distanceSL_PCT = Math.abs(entryPrice - stopLoss) / entryPrice;
+  const oneR = positionSize * distanceSL_PCT;
+  return { margin, positionSize, oneR };
+}
+
+/**
+ * Calculate position metrics starting from 1R
+ */
+export function calculateFromOneR(
+  oneR: number,
+  leverage: number,
+  entryPrice: number,
+  stopLoss: number,
+  _positionType: PositionType
+): { margin: number; positionSize: number; quantity: number } {
+  const distanceSL_PCT = Math.abs(entryPrice - stopLoss) / entryPrice;
+  const positionSize = oneR / distanceSL_PCT;
+  const margin = positionSize / leverage;
+  const quantity = positionSize / entryPrice;
+  return { margin, positionSize, quantity };
+}

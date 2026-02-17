@@ -10,12 +10,12 @@ export function AnonymousToggle() {
       variant="outline"
       size="sm"
       onClick={toggleAnonymous}
-      className="px-3"
+      className="px-2 sm:px-3"
     >
       {isAnonymous ? (
-        <EyeOff className="h-4 w-4" />
+        <EyeOff className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
       ) : (
-        <Eye className="h-4 w-4" />
+        <Eye className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
       )}
     </Button>
   );

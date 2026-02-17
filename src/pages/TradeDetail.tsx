@@ -15,6 +15,7 @@ import { ArrowLeft, Copy, Trash2, AlertCircle, TrendingUp, TrendingDown, Calenda
 import { HelpBadge } from '../components/HelpBadge';
 import { useEntryManager } from '../hooks/useEntryManager';
 import { WeightedEntryDisplay } from '../components/WeightedEntryDisplay';
+import { PositionMetricsEditor } from '../components/PositionMetricsEditor';
 import { Switch } from '../components/ui/switch';
 
 type Exit = {
@@ -58,6 +59,12 @@ export default function TradeDetail() {
   const [leverage, setLeverage] = useState(10);
   const [plannedTps, setPlannedTps] = useState<Array<{price: number, percent: number}>>([]);
 
+  // Planned position metrics (optional overrides - stored in local state only)
+  const [plannedMarginOverride, setPlannedMarginOverride] = useState<number | null>(null);
+  const [plannedPositionSizeOverride, setPlannedPositionSizeOverride] = useState<number | null>(null);
+  const [plannedQuantityOverride, setPlannedQuantityOverride] = useState<number | null>(null);
+  const [plannedOneROverride, setPlannedOneROverride] = useState<number | null>(null);
+
   // Editable execution fields
   const [effectivePe, setEffectivePe] = useState(0);
   const [exits, setExits] = useState<Exit[]>([]);
@@ -68,6 +75,12 @@ export default function TradeDetail() {
   const [useExecutionR, setUseExecutionR] = useState(false);
   const [executionPortfolio, setExecutionPortfolio] = useState(0);
   const [executionRPercent, setExecutionRPercent] = useState(0);
+
+  // Execution position metrics
+  const [executionMargin, setExecutionMargin] = useState(0);
+  const [executionPositionSize, setExecutionPositionSize] = useState(0);
+  const [executionQuantity, setExecutionQuantity] = useState(0);
+  const [executionOneR, setExecutionOneR] = useState(0);
 
   // Calculate current metrics (memoized) - must be before early returns
   const { executionMetrics, executionValid, validExits, totalExitPercent } = useMemo(() => {
@@ -151,6 +164,24 @@ export default function TradeDetail() {
       return null;
     }
   }, [useExecutionR, executionPortfolio, executionRPercent, effectiveEntries, exits, plannedTps, plannedSl, leverage, trade]);
+
+  // Calculate effective planned metrics (use overrides if set, otherwise use calculated values)
+  const effectivePlannedMetrics = useMemo(() => {
+    if (!trade) {
+      return {
+        margin: 0,
+        positionSize: 0,
+        quantity: 0,
+        oneR: 0,
+      };
+    }
+    return {
+      margin: plannedMarginOverride ?? trade.margin,
+      positionSize: plannedPositionSizeOverride ?? trade.position_size,
+      quantity: plannedQuantityOverride ?? trade.quantity,
+      oneR: plannedOneROverride ?? trade.one_r,
+    };
+  }, [plannedMarginOverride, plannedPositionSizeOverride, plannedQuantityOverride, plannedOneROverride, trade]);
 
   useEffect(() => {
     if (id) {
@@ -241,6 +272,12 @@ export default function TradeDetail() {
       setUseExecutionR(!!data.execution_portfolio && !!data.execution_r_percent);
       setExecutionPortfolio(data.execution_portfolio || data.portfolio_value);
       setExecutionRPercent(data.execution_r_percent ? data.execution_r_percent * 100 : data.r_percent * 100);
+
+      // Initialize execution position metrics
+      setExecutionMargin(data.execution_margin || data.margin);
+      setExecutionPositionSize(data.execution_position_size || data.position_size);
+      setExecutionQuantity(data.execution_quantity || data.quantity);
+      setExecutionOneR(data.execution_one_r || data.one_r);
     } catch (error) {
       console.error('Failed to load trade:', error);
       toast.error(t('tradeDetail.failedToLoad'));
@@ -397,18 +434,18 @@ export default function TradeDetail() {
       const executionFields = useExecutionR && executionCalculations ? {
         execution_portfolio: executionPortfolio,
         execution_r_percent: executionRPercent / 100,
-        execution_margin: executionCalculations.margin,
-        execution_position_size: executionCalculations.positionSize,
-        execution_quantity: executionCalculations.quantity,
-        execution_one_r: executionCalculations.oneR,
+        execution_margin: executionMargin,
+        execution_position_size: executionPositionSize,
+        execution_quantity: executionQuantity,
+        execution_one_r: executionOneR,
         execution_potential_profit: executionCalculations.potentialProfit,
       } : {
         execution_portfolio: undefined,
         execution_r_percent: undefined,
-        execution_margin: undefined,
-        execution_position_size: undefined,
-        execution_quantity: undefined,
-        execution_one_r: undefined,
+        execution_margin: executionMargin !== trade.margin ? executionMargin : undefined,
+        execution_position_size: executionPositionSize !== trade.position_size ? executionPositionSize : undefined,
+        execution_quantity: executionQuantity !== trade.quantity ? executionQuantity : undefined,
+        execution_one_r: executionOneR !== trade.one_r ? executionOneR : undefined,
         execution_potential_profit: undefined,
       };
 
@@ -639,8 +676,39 @@ export default function TradeDetail() {
                 </div>
               </div>
 
+              {/* Position Metrics Editor - Plan Section */}
+              <div className="pt-3 border-t">
+                <PositionMetricsEditor
+                  entryPrice={(() => {
+                    const validEntries = plannedEntries.filter(e => e.price > 0 && e.percent > 0);
+                    if (validEntries.length > 1) {
+                      try {
+                        return calculateWeightedEntry(validEntries);
+                      } catch {
+                        return trade.planned_pe;
+                      }
+                    }
+                    return validEntries[0]?.price || trade.planned_pe;
+                  })()}
+                  stopLoss={plannedSl}
+                  leverage={leverage}
+                  positionType={trade.position_type as 'LONG' | 'SHORT'}
+                  initialMargin={effectivePlannedMetrics.margin}
+                  initialPositionSize={effectivePlannedMetrics.positionSize}
+                  initialQuantity={effectivePlannedMetrics.quantity}
+                  initialOneR={effectivePlannedMetrics.oneR}
+                  onChange={(metrics) => {
+                    setPlannedMarginOverride(metrics.margin);
+                    setPlannedPositionSizeOverride(metrics.positionSize);
+                    setPlannedQuantityOverride(metrics.quantity);
+                    setPlannedOneROverride(metrics.oneR);
+                  }}
+                  label={t('positionMetrics.title')}
+                />
+              </div>
+
               {/* Planned Entries (Multi-PE) - Editable */}
-              <div className="space-y-3">
+              <div className="space-y-3 pt-3 border-t">
                 <div className="flex items-center justify-between">
                   <Label className="text-sm font-semibold">
                     {t('tradeDetail.plannedEntries') || 'Planned Entries'}
@@ -963,6 +1031,37 @@ export default function TradeDetail() {
                 <WeightedEntryDisplay
                   entries={effectiveEntries}
                   label="Weighted Avg Effective Entry"
+                />
+              </div>
+
+              {/* Position Metrics Editor - Execution Section */}
+              <div className="pt-3 border-t">
+                <PositionMetricsEditor
+                  entryPrice={(() => {
+                    const validEntries = effectiveEntries.filter(e => e.price > 0 && e.percent > 0);
+                    if (validEntries.length > 1) {
+                      try {
+                        return calculateWeightedEntry(validEntries);
+                      } catch {
+                        return effectivePe || trade.planned_pe;
+                      }
+                    }
+                    return validEntries[0]?.price || effectivePe || trade.planned_pe;
+                  })()}
+                  stopLoss={plannedSl}
+                  leverage={leverage}
+                  positionType={trade.position_type as 'LONG' | 'SHORT'}
+                  initialMargin={executionMargin}
+                  initialPositionSize={executionPositionSize}
+                  initialQuantity={executionQuantity}
+                  initialOneR={executionOneR}
+                  onChange={(metrics) => {
+                    setExecutionMargin(metrics.margin);
+                    setExecutionPositionSize(metrics.positionSize);
+                    setExecutionQuantity(metrics.quantity);
+                    setExecutionOneR(metrics.oneR);
+                  }}
+                  label={t('positionMetrics.title')}
                 />
               </div>
 
