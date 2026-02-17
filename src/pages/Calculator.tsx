@@ -245,50 +245,54 @@ export default function Calculator() {
             </div>
           </CardHeader>
           <CardContent className="pt-0 px-2 sm:px-3 pb-2 sm:pb-3 space-y-1.5 sm:space-y-2">
-            <div className="space-y-0.5 sm:space-y-1">
-              <Label htmlFor="portfolio" className="text-[10px] sm:text-xs">
-                {t('calculator.portfolio') || 'Portfolio ($)'}
-              </Label>
-              <Input
-                id="portfolio"
-                type="text"
-                inputMode="decimal"
-                value={portfolio}
-                onChange={(e) => setPortfolio(parseFloat(e.target.value) || 0)}
-                className="h-7 sm:h-8 text-xs sm:text-sm font-semibold"
-              />
+            {/* Mobile: 3 columns, Desktop: vertical */}
+            <div className="grid grid-cols-3 sm:grid-cols-1 gap-1.5 sm:gap-0 sm:space-y-2">
+              <div className="space-y-0.5 sm:space-y-1">
+                <Label htmlFor="portfolio" className="text-[10px] sm:text-xs">
+                  {t('calculator.portfolio') || 'Portfolio ($)'}
+                </Label>
+                <Input
+                  id="portfolio"
+                  type="text"
+                  inputMode="decimal"
+                  value={portfolio}
+                  onChange={(e) => setPortfolio(parseFloat(e.target.value) || 0)}
+                  className="h-7 sm:h-8 text-xs sm:text-sm font-semibold"
+                />
+              </div>
+              <div className="space-y-0.5 sm:space-y-1">
+                <Label htmlFor="rPercent" className="text-[10px] sm:text-xs">
+                  {t('calculator.rPercent') || 'R %'}
+                </Label>
+                <Input
+                  id="rPercent"
+                  type="text"
+                  inputMode="decimal"
+                  value={rPercent}
+                  onChange={(e) => setRPercent(parseFloat(e.target.value) || 0)}
+                  className="h-7 sm:h-8 text-xs sm:text-sm font-semibold"
+                />
+              </div>
+              <div className="space-y-0.5 sm:space-y-1">
+                <Label htmlFor="minRR" className="text-[10px] sm:text-xs">
+                  {t('calculator.minRR') || 'Min RR'}
+                </Label>
+                <Input
+                  id="minRR"
+                  type="text"
+                  inputMode="decimal"
+                  value={minRR}
+                  onChange={(e) => setMinRR(parseFloat(e.target.value) || 0)}
+                  className="h-7 sm:h-8 text-xs sm:text-sm font-semibold"
+                />
+              </div>
             </div>
-            <div className="space-y-0.5 sm:space-y-1">
-              <Label htmlFor="rPercent" className="text-[10px] sm:text-xs">
-                {t('calculator.rPercent') || 'R %'}
-              </Label>
-              <Input
-                id="rPercent"
-                type="text"
-                inputMode="decimal"
-                value={rPercent}
-                onChange={(e) => setRPercent(parseFloat(e.target.value) || 0)}
-                className="h-7 sm:h-8 text-xs sm:text-sm font-semibold"
-              />
-              {portfolio > 0 && rPercent > 0 && (
-                <p className="text-[9px] sm:text-[10px] text-muted-foreground">
-                  = {formatCurrency((portfolio * rPercent) / 100)}
-                </p>
-              )}
-            </div>
-            <div className="space-y-0.5 sm:space-y-1">
-              <Label htmlFor="minRR" className="text-[10px] sm:text-xs">
-                {t('calculator.minRR') || 'Min RR'}
-              </Label>
-              <Input
-                id="minRR"
-                type="text"
-                inputMode="decimal"
-                value={minRR}
-                onChange={(e) => setMinRR(parseFloat(e.target.value) || 0)}
-                className="h-7 sm:h-8 text-xs sm:text-sm font-semibold"
-              />
-            </div>
+            {/* R% calculation helper - shown below on mobile */}
+            {portfolio > 0 && rPercent > 0 && (
+              <p className="text-[9px] sm:text-[10px] text-muted-foreground sm:hidden">
+                1R = {formatCurrency((portfolio * rPercent) / 100)}
+              </p>
+            )}
             <Button
               size="sm"
               variant="outline"
@@ -500,12 +504,12 @@ export default function Calculator() {
 
         {/* STEP 3: Calculated Metrics & Leverage */}
         <Card>
-          <CardHeader className="pb-2 pt-3 px-3">
-            <div className="flex items-center gap-1.5">
-              <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold">
+          <CardHeader className="pb-1 sm:pb-2 pt-2 sm:pt-3 px-2 sm:px-3">
+            <div className="flex items-center gap-1 sm:gap-1.5">
+              <div className="flex h-4 w-4 sm:h-5 sm:w-5 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-[10px] sm:text-xs font-bold">
                 3
               </div>
-              <CardTitle className="text-sm">{t('calculator.setLeverage')}</CardTitle>
+              <CardTitle className="text-xs sm:text-sm">{t('calculator.setLeverage')}</CardTitle>
               <HelpTooltip
                 title={t('calculator.helpLeverageTitle')}
                 content={
@@ -524,47 +528,50 @@ export default function Calculator() {
               />
             </div>
           </CardHeader>
-          <CardContent className="pt-0 px-3 pb-3 space-y-3">
+          <CardContent className="pt-0 px-2 sm:px-3 pb-2 sm:pb-3 space-y-2 sm:space-y-3">
             {/* Calculated Metrics Display */}
             {metrics ? (
-              <div className="p-3 border rounded-lg bg-muted/30 space-y-2">
-                <div className="text-center">
-                  <Badge
-                    variant={metrics.type === 'LONG' ? 'default' : 'destructive'}
-                    className="text-sm font-bold px-3 py-1"
-                  >
-                    {metrics.type}
-                  </Badge>
-                </div>
-                <div className="space-y-1 text-center">
-                  <div className="text-xs text-muted-foreground">SL Distance</div>
-                  <div className="text-lg font-bold">
-                    {formatPercent(metrics.distances.distanceSL_PCT)}
+              <div className="p-2 sm:p-3 border rounded-lg bg-muted/30">
+                {/* Mobile: horizontal layout, Desktop: vertical layout */}
+                <div className="flex items-center justify-between sm:flex-col sm:space-y-2 gap-2 sm:gap-0">
+                  <div className="text-center">
+                    <Badge
+                      variant={metrics.type === 'LONG' ? 'default' : 'destructive'}
+                      className="text-xs sm:text-sm font-bold px-2 sm:px-3 py-0.5 sm:py-1"
+                    >
+                      {metrics.type}
+                    </Badge>
                   </div>
-                </div>
-                <div className="space-y-1 text-center">
-                  <div className="text-xs text-muted-foreground">Max Leverage</div>
-                  <div className="text-2xl font-bold">
-                    {metrics.maxLeverage !== null ? `${metrics.maxLeverage}x` : 'N/A'}
+                  <div className="text-center">
+                    <div className="text-[9px] sm:text-xs text-muted-foreground">SL Dist.</div>
+                    <div className="text-xs sm:text-lg font-bold">
+                      {formatPercent(metrics.distances.distanceSL_PCT)}
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-[9px] sm:text-xs text-muted-foreground">Max Safe Lev.</div>
+                    <div className="text-xs sm:text-2xl font-bold">
+                      {metrics.maxLeverage !== null ? `${metrics.maxLeverage}x` : 'N/A'}
+                    </div>
                   </div>
                 </div>
               </div>
             ) : (
-              <div className="p-3 border rounded-lg bg-muted/30 text-center text-xs text-muted-foreground">
+              <div className="p-2 sm:p-3 border rounded-lg bg-muted/30 text-center text-[10px] sm:text-xs text-muted-foreground">
                 Enter PE and SL to see calculated metrics
               </div>
             )}
 
             {/* Leverage Input - Below calculated metrics */}
-            <div className="space-y-1 pt-1 border-t">
-              <Label htmlFor="leverage" className="text-xs font-semibold">{t('calculator.leverageX')}</Label>
+            <div className="space-y-0.5 sm:space-y-1 pt-0.5 sm:pt-1 border-t">
+              <Label htmlFor="leverage" className="text-[10px] sm:text-xs font-semibold">{t('calculator.leverageX')}</Label>
               <Input
                 id="leverage"
                 type="text"
                 inputMode="numeric"
                 value={leverage}
                 onChange={(e) => setLeverage(parseInt(e.target.value) || 1)}
-                className="h-7 text-sm font-semibold"
+                className="h-6 sm:h-7 text-xs sm:text-sm font-semibold"
               />
             </div>
           </CardContent>
