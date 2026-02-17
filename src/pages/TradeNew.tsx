@@ -45,27 +45,25 @@ export default function TradeNew() {
   const [leverage, setLeverage] = useState(calculatorData?.leverage || 10);
 
   // Initialize TPs from calculator (supports both old single TP and new multi-TP)
-  const [plannedTps, setPlannedTps] = useState(() => {
+  const initialPlannedTps = (() => {
     if (calculatorData?.tps && Array.isArray(calculatorData.tps)) {
       // New format: multiple TPs from calculator
-      return calculatorData.tps.length > 0 ? calculatorData.tps : [{ price: 0, percent: 0 }];
+      return calculatorData.tps.length > 0 ? calculatorData.tps : [{ price: 0, percent: 100 }];
     } else if (calculatorData?.tp) {
       // Old format: single TP (backward compatibility)
-      return [
-        { price: calculatorData.tp, percent: 100 },
-        { price: 0, percent: 0 },
-        { price: 0, percent: 0 },
-        { price: 0, percent: 0 },
-      ];
+      return [{ price: calculatorData.tp, percent: 100 }];
     }
-    // Default: empty TPs
-    return [
-      { price: 0, percent: 0 },
-      { price: 0, percent: 0 },
-      { price: 0, percent: 0 },
-      { price: 0, percent: 0 },
-    ];
-  });
+    // Default: one empty TP
+    return [{ price: 0, percent: 100 }];
+  })();
+
+  const plannedTpsManager = useEntryManager(initialPlannedTps);
+  const {
+    entries: plannedTps,
+    add: addPlannedTp,
+    remove: removePlannedTp,
+    update: updatePlannedTp
+  } = plannedTpsManager;
 
   // Initialize entries from calculator (using custom hook)
   const initialPlannedEntries = (() => {
@@ -97,12 +95,14 @@ export default function TradeNew() {
 
   // Form state - EXECUTION SECTION
   const [closeDate, setCloseDate] = useState('');
-  const [exits, setExits] = useState([
-    { price: 0, percent: 0 },
-    { price: 0, percent: 0 },
-    { price: 0, percent: 0 },
-    { price: 0, percent: 0 },
-  ]);
+
+  const exitsManager = useEntryManager([{ price: 0, percent: 100 }]);
+  const {
+    entries: exits,
+    add: addExit,
+    remove: removeExit,
+    update: updateExit
+  } = exitsManager;
 
   // Unified notes
   const [notes, setNotes] = useState('');
@@ -664,50 +664,67 @@ export default function TradeNew() {
 
               {/* Planned Take Profits */}
               <div className="space-y-3 pt-3 border-t">
-                <div className="text-sm font-semibold">{t('tradeNew.plannedTakeProfits')}</div>
+                <div className="flex items-center justify-between">
+                  <div className="text-sm font-semibold">{t('tradeNew.plannedTakeProfits')}</div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={addPlannedTp}
+                    className="h-6 text-xs px-2"
+                  >
+                    <Plus className="h-3 w-3 mr-1" />
+                    {t('common.add')}
+                  </Button>
+                </div>
                 {plannedTps.map((tp: TakeProfit, index: number) => (
-                  <div key={index} className="grid gap-3 grid-cols-2">
-                    <div className="space-y-1">
-                      <Label htmlFor={`tp${index}-price`} className="text-xs">
-                        TP{index + 1} {t('calculator.entryShort')} {index === 0 && '*'}
-                      </Label>
-                      <Input
-                        id={`tp${index}-price`}
-                        type="number"
-                        step="0.00000001"
-                        value={tp.price || ''}
-                        onChange={(e) => {
-                          const v = parseFloat(e.target.value);
-                          if (!isNaN(v) || e.target.value === '') {
-                            const newTps = [...plannedTps];
-                            newTps[index].price = v || 0;
-                            setPlannedTps(newTps);
-                          }
-                        }}
-                        placeholder={t('tradeNew.pricePlaceholder')}
-                        className={`font-mono text-sm ${index === 0 && !tp.price ? 'field-required' : ''}`}
-                        required={index === 0}
-                      />
+                  <div key={index} className="p-2 border rounded bg-muted/20 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Badge variant="outline" className="text-xs">
+                        TP{index + 1}
+                      </Badge>
+                      {plannedTps.length > 1 && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removePlannedTp(index)}
+                          className="h-5 w-5 p-0"
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      )}
                     </div>
-                    <div className="space-y-1">
-                      <Label htmlFor={`tp${index}-percent`} className="text-xs">{t('tradeNew.allocationPercent')}</Label>
-                      <Input
-                        id={`tp${index}-percent`}
-                        type="number"
-                        min="0"
-                        max="100"
-                        value={tp.percent || ''}
-                        onChange={(e) => {
-                          const v = parseFloat(e.target.value);
-                          if (!isNaN(v) || e.target.value === '') {
-                            const newTps = [...plannedTps];
-                            newTps[index].percent = v || 0;
-                            setPlannedTps(newTps);
-                          }
-                        }}
-                        placeholder={t('tradeNew.percentPlaceholder')}
-                        className="text-sm"
-                      />
+                    <div className="grid gap-3 grid-cols-2">
+                      <div className="space-y-1">
+                        <Label htmlFor={`tp${index}-price`} className="text-xs">
+                          {t('calculator.entryShort')} {index === 0 && '*'}
+                        </Label>
+                        <Input
+                          id={`tp${index}-price`}
+                          type="number"
+                          step="0.00000001"
+                          value={tp.price || ''}
+                          onChange={(e) => updatePlannedTp(index, 'price', parseFloat(e.target.value) || 0)}
+                          placeholder={t('tradeNew.pricePlaceholder')}
+                          className={`font-mono text-sm ${index === 0 && !tp.price ? 'field-required' : ''}`}
+                          required={index === 0}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label htmlFor={`tp${index}-percent`} className="text-xs">{t('tradeNew.allocationPercent')}</Label>
+                        <Input
+                          id={`tp${index}-percent`}
+                          type="number"
+                          min="0"
+                          max="100"
+                          value={tp.percent || ''}
+                          onChange={(e) => updatePlannedTp(index, 'percent', parseFloat(e.target.value) || 0)}
+                          disabled={!tp.price}
+                          placeholder={t('tradeNew.percentPlaceholder')}
+                          className="text-sm"
+                        />
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -1046,18 +1063,45 @@ export default function TradeNew() {
 
               {/* Actual Exits */}
               <div className="space-y-3 pt-3 border-t">
-                <Label className="text-sm font-semibold">{t('tradeNew.actualExits')}</Label>
-                <p className="text-xs text-muted-foreground">
-                  {t('tradeDetail.exits')}
-                </p>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label className="text-sm font-semibold">{t('tradeNew.actualExits')}</Label>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {t('tradeDetail.exits')}
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={addExit}
+                    className="h-6 text-xs px-2"
+                  >
+                    <Plus className="h-3 w-3 mr-1" />
+                    {t('common.add')}
+                  </Button>
+                </div>
                 {exits.map((exit, index) => (
                   <div key={index} className="p-3 border rounded-lg space-y-2 bg-muted/30">
                     <div className="flex items-center justify-between">
-                      <Badge variant="outline">{t('import.exit')} {index + 1}</Badge>
-                      {plannedTps[index]?.price > 0 && (
-                        <span className="text-xs text-muted-foreground">
-                          {t('tradeNew.plannedSetup')}: {plannedTps[index]?.percent}% @ ${plannedTps[index]?.price?.toFixed(8)}
-                        </span>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline">{t('import.exit')} {index + 1}</Badge>
+                        {plannedTps[index]?.price > 0 && (
+                          <span className="text-xs text-muted-foreground">
+                            {t('tradeNew.plannedSetup')}: {plannedTps[index]?.percent}% @ ${plannedTps[index]?.price?.toFixed(8)}
+                          </span>
+                        )}
+                      </div>
+                      {exits.length > 1 && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeExit(index)}
+                          className="h-5 w-5 p-0"
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
                       )}
                     </div>
                     <div className="grid gap-3 grid-cols-2">
@@ -1068,14 +1112,7 @@ export default function TradeNew() {
                           type="number"
                           step="0.00000001"
                           value={exit.price || ''}
-                          onChange={(e) => {
-                            const v = parseFloat(e.target.value);
-                            if (!isNaN(v) || e.target.value === '') {
-                              const newExits = [...exits];
-                              newExits[index].price = v || 0;
-                              setExits(newExits);
-                            }
-                          }}
+                          onChange={(e) => updateExit(index, 'price', parseFloat(e.target.value) || 0)}
                           placeholder={t('tradeNew.pricePlaceholder')}
                           className="font-mono text-sm"
                         />
@@ -1088,14 +1125,8 @@ export default function TradeNew() {
                           min="0"
                           max="100"
                           value={exit.percent || ''}
-                          onChange={(e) => {
-                            const v = parseFloat(e.target.value);
-                            if (!isNaN(v) || e.target.value === '') {
-                              const newExits = [...exits];
-                              newExits[index].percent = v || 0;
-                              setExits(newExits);
-                            }
-                          }}
+                          onChange={(e) => updateExit(index, 'percent', parseFloat(e.target.value) || 0)}
+                          disabled={!exit.price}
                           placeholder={t('tradeNew.percentPlaceholder')}
                           className="text-sm"
                         />

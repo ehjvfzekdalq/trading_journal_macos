@@ -261,8 +261,8 @@ export const api = {
   deleteAllTrades: () => invoke<number>('delete_all_trades'),
 
   // Stats
-  getDashboardStats: (dateRange?: string) => invoke<DashboardStats>('get_dashboard_stats', { dateRange }),
-  getEquityCurve: (dateRange?: string) => invoke<EquityCurvePoint[]>('get_equity_curve', { dateRange }),
+  getDashboardStats: (dateRange?: string) => invoke<DashboardStats>('get_dashboard_stats', { date_range: dateRange }),
+  getEquityCurve: (dateRange?: string) => invoke<EquityCurvePoint[]>('get_equity_curve', { date_range: dateRange }),
 
   // Import/Export
   previewBitgetImport: (csvContent: string, portfolio: number, rPercent: number) =>

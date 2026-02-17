@@ -206,7 +206,66 @@ export default function Journal() {
           </Card>
         ) : (
           <Card>
-            <CardContent className="p-0 overflow-x-auto">
+            <CardContent className="p-0">
+              {/* Mobile Card View */}
+              <div className="md:hidden divide-y">
+                {filteredTrades.map(trade => {
+                  // Calculate P&L in R for mobile view
+                  let pnlInR = null;
+                  if (trade.status === 'BE') {
+                    pnlInR = 0;
+                  } else if (trade.status !== 'OPEN' && trade.total_pnl != null && trade.one_r > 0) {
+                    pnlInR = trade.total_pnl / trade.one_r;
+                  }
+
+                  return (
+                    <div
+                      key={trade.id}
+                      className="p-3 hover:bg-accent/50 transition-colors cursor-pointer"
+                      onClick={() => navigate(`/journal/${trade.id}`)}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="font-semibold text-sm">{trade.pair}</span>
+                            <Badge variant={trade.position_type === 'LONG' ? 'default' : 'secondary'} className="text-[10px] h-4 px-1">
+                              {trade.position_type}
+                            </Badge>
+                            <Badge variant={
+                              trade.status === 'WIN' ? 'default' :
+                              trade.status === 'LOSS' ? 'destructive' :
+                              trade.status === 'BE' ? 'secondary' :
+                              'outline'
+                            } className="text-[10px] h-4 px-1">
+                              {trade.status}
+                            </Badge>
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {trade.exchange} • {new Date(trade.trade_date * 1000).toLocaleDateString()}
+                          </div>
+                        </div>
+                        <div className="text-right flex-shrink-0">
+                          <div className={`text-sm font-bold ${
+                            (trade.total_pnl != null || trade.status === 'BE')
+                              ? ((trade.total_pnl ?? 0) > 0 ? 'text-success' : (trade.total_pnl ?? 0) < 0 ? 'text-destructive' : 'text-muted-foreground')
+                              : 'text-muted-foreground'
+                          }`}>
+                            {(trade.total_pnl != null || trade.status === 'BE') ? <CurrencyDisplay value={trade.total_pnl ?? 0} /> : '-'}
+                          </div>
+                          {pnlInR !== null && (
+                            <div className="text-[10px] text-muted-foreground">
+                              {pnlInR > 0 ? '+' : ''}{pnlInR.toFixed(2)}R
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Desktop Table View */}
+              <div className="hidden md:block overflow-x-auto">
               {/* Table Header */}
               <div className="flex items-center gap-4 p-3 bg-muted/50 border-b font-semibold text-xs text-muted-foreground">
                 <div className="min-w-[120px]">{t('journal.pair') || 'Pair'}</div>
@@ -438,6 +497,7 @@ export default function Journal() {
                     </Button>
                   </div>
                 ))}
+              </div>
               </div>
             </CardContent>
           </Card>
