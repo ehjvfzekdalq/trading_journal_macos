@@ -251,8 +251,8 @@ export default function Calculator() {
                 id="portfolio"
                 type="text"
                 inputMode="decimal"
-                defaultValue={portfolio}
-                onBlur={(e) => setPortfolio(parseFloat(e.target.value) || 0)}
+                value={portfolio}
+                onChange={(e) => setPortfolio(parseFloat(e.target.value) || 0)}
                 className="h-8 text-sm font-semibold"
               />
             </div>
@@ -264,8 +264,8 @@ export default function Calculator() {
                 id="rPercent"
                 type="text"
                 inputMode="decimal"
-                defaultValue={rPercent}
-                onBlur={(e) => setRPercent(parseFloat(e.target.value) || 0)}
+                value={rPercent}
+                onChange={(e) => setRPercent(parseFloat(e.target.value) || 0)}
                 className="h-8 text-sm font-semibold"
               />
               {portfolio > 0 && rPercent > 0 && (
@@ -282,8 +282,8 @@ export default function Calculator() {
                 id="minRR"
                 type="text"
                 inputMode="decimal"
-                defaultValue={minRR}
-                onBlur={(e) => setMinRR(parseFloat(e.target.value) || 0)}
+                value={minRR}
+                onChange={(e) => setMinRR(parseFloat(e.target.value) || 0)}
                 className="h-8 text-sm font-semibold"
               />
             </div>
@@ -560,8 +560,8 @@ export default function Calculator() {
                 id="leverage"
                 type="text"
                 inputMode="numeric"
-                defaultValue={leverage}
-                onBlur={(e) => setLeverage(parseInt(e.target.value) || 1)}
+                value={leverage}
+                onChange={(e) => setLeverage(parseInt(e.target.value) || 1)}
                 className="h-7 text-sm font-semibold"
               />
             </div>

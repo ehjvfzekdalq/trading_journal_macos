@@ -121,7 +121,7 @@ export default function Journal() {
         {/* Search Filter */}
         <div className="flex items-center gap-2">
           <Search className="h-4 w-4 text-muted-foreground" />
-          <span className="text-xs text-muted-foreground min-w-[60px]">
+          <span className="text-xs text-muted-foreground min-w-[60px] hidden sm:inline">
             {t('journal.search')}:
           </span>
           <Input
@@ -146,7 +146,7 @@ export default function Journal() {
         {/* Date Range Filter */}
         <div className="flex items-center gap-2">
           <Calendar className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-          <span className="text-xs text-muted-foreground min-w-[60px] flex-shrink-0">
+          <span className="text-xs text-muted-foreground min-w-[60px] flex-shrink-0 hidden sm:inline">
             {t('journal.dateRange') || 'Period'}:
           </span>
           <div className="flex flex-wrap gap-1 border rounded-lg p-1">
@@ -167,7 +167,7 @@ export default function Journal() {
         {/* Status Filter */}
         <div className="flex items-center gap-2 flex-wrap">
           <div className="h-4 w-4 flex-shrink-0" /> {/* Spacer for alignment */}
-          <span className="text-xs text-muted-foreground min-w-[60px] flex-shrink-0">
+          <span className="text-xs text-muted-foreground min-w-[60px] flex-shrink-0 hidden sm:inline">
             {t('common.status') || 'Status'}:
           </span>
           <div className="flex flex-wrap gap-1 border rounded-lg p-1">
@@ -183,9 +183,11 @@ export default function Journal() {
               </Button>
             ))}
           </div>
-          <span className="text-sm text-muted-foreground md:ml-auto">
-            {filteredTrades.length} {t('journal.trades') || 'trades'}
-          </span>
+        </div>
+
+        {/* Trade count - moved below filters */}
+        <div className="text-sm text-muted-foreground">
+          {filteredTrades.length} {t('journal.trades') || 'trades'}
         </div>
       </div>
 

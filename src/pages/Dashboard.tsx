@@ -85,7 +85,7 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight flex items-center gap-2">
@@ -126,95 +126,95 @@ export default function Dashboard() {
 
       {stats && (
         <>
-          {/* Main Stats Grid */}
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {/* Stats Grid */}
+          <div className="grid gap-2 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7">
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">{t('dashboard.totalTrades')}</CardTitle>
-                <BarChart3 className="h-4 w-4 text-muted-foreground" />
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 px-3 pt-3">
+                <CardTitle className="text-xs font-medium">{t('dashboard.totalTrades')}</CardTitle>
+                <BarChart3 className="h-3 w-3 text-muted-foreground" />
               </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats.total_trades}</div>
-                <p className="text-xs text-muted-foreground">
+              <CardContent className="px-3 pb-3">
+                <div className="text-xl font-bold">{stats.total_trades}</div>
+                <p className="text-[10px] text-muted-foreground">
                   {stats.open_trades} {t('dashboard.open')}
                 </p>
               </CardContent>
             </Card>
 
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">{t('dashboard.winRate')}</CardTitle>
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 px-3 pt-3">
+                <CardTitle className="text-xs font-medium">{t('dashboard.winRate')}</CardTitle>
+                <TrendingUp className="h-3 w-3 text-muted-foreground" />
               </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{formatPercent(stats.win_rate / 100)}</div>
-                <p className="text-xs text-muted-foreground">
+              <CardContent className="px-3 pb-3">
+                <div className="text-xl font-bold">{formatPercent(stats.win_rate / 100)}</div>
+                <p className="text-[10px] text-muted-foreground">
                   {stats.wins}W / {stats.losses}L / {stats.breakevens}BE
                 </p>
               </CardContent>
             </Card>
 
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">{t('dashboard.finishedTradesPnL')}</CardTitle>
-                <DollarSign className="h-4 w-4 text-muted-foreground" />
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 px-3 pt-3">
+                <CardTitle className="text-xs font-medium">{t('dashboard.finishedTradesPnL')}</CardTitle>
+                <DollarSign className="h-3 w-3 text-muted-foreground" />
               </CardHeader>
-              <CardContent>
-                <div className={`text-2xl font-bold ${stats.total_pnl >= 0 ? 'text-success' : 'text-destructive'}`}>
+              <CardContent className="px-3 pb-3">
+                <div className={`text-xl font-bold ${stats.total_pnl >= 0 ? 'text-success' : 'text-destructive'}`}>
                   <CurrencyDisplay value={stats.total_pnl} />
                 </div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-[10px] text-muted-foreground">
                   {t('dashboard.allClosedTrades')}
                 </p>
               </CardContent>
             </Card>
 
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">{t('dashboard.profitFactor')}</CardTitle>
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 px-3 pt-3">
+                <CardTitle className="text-xs font-medium">{t('dashboard.profitFactor')}</CardTitle>
+                <TrendingUp className="h-3 w-3 text-muted-foreground" />
               </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
+              <CardContent className="px-3 pb-3">
+                <div className="text-xl font-bold">
                   {stats.profit_factor === Infinity ? '∞' : stats.profit_factor.toFixed(2)}
                 </div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-[10px] text-muted-foreground">
                   <CurrencyDisplay value={stats.gross_profit} /> / <CurrencyDisplay value={stats.gross_loss} />
                 </p>
               </CardContent>
             </Card>
-          </div>
 
-          {/* Additional Stats */}
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             <Card>
-              <CardHeader>
-                <CardTitle className="text-sm font-medium">{t('dashboard.bestTrade')}</CardTitle>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 px-3 pt-3">
+                <CardTitle className="text-xs font-medium">{t('dashboard.bestTrade')}</CardTitle>
+                <TrendingUp className="h-3 w-3 text-muted-foreground" />
               </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-success">
+              <CardContent className="px-3 pb-3">
+                <div className="text-xl font-bold text-success">
                   <CurrencyDisplay value={stats.best_trade} />
                 </div>
               </CardContent>
             </Card>
 
             <Card>
-              <CardHeader>
-                <CardTitle className="text-sm font-medium">{t('dashboard.worstTrade')}</CardTitle>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 px-3 pt-3">
+                <CardTitle className="text-xs font-medium">{t('dashboard.worstTrade')}</CardTitle>
+                <TrendingUp className="h-3 w-3 text-muted-foreground" />
               </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-destructive">
+              <CardContent className="px-3 pb-3">
+                <div className="text-xl font-bold text-destructive">
                   <CurrencyDisplay value={stats.worst_trade} />
                 </div>
               </CardContent>
             </Card>
 
             <Card>
-              <CardHeader>
-                <CardTitle className="text-sm font-medium">{t('dashboard.avgEffectiveRR')}</CardTitle>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 px-3 pt-3">
+                <CardTitle className="text-xs font-medium">{t('dashboard.avgEffectiveRR')}</CardTitle>
+                <TrendingUp className="h-3 w-3 text-muted-foreground" />
               </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
+              <CardContent className="px-3 pb-3">
+                <div className="text-xl font-bold">
                   {stats.avg_effective_rr.toFixed(2)}:1
                 </div>
               </CardContent>
@@ -225,14 +225,14 @@ export default function Dashboard() {
 
       {/* Charts */}
       {equityCurve.length > 0 && (
-        <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-2">
+        <div className="grid gap-2 md:grid-cols-1 lg:grid-cols-2">
           {/* Cumulative P&L Chart */}
           <Card>
-            <CardHeader>
-              <CardTitle>{t('dashboard.equityCurve')}</CardTitle>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm">{t('dashboard.equityCurve')}</CardTitle>
             </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
+            <CardContent className="pb-2">
+              <ResponsiveContainer width="100%" height={250}>
                 <LineChart data={equityCurve}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                   <XAxis
@@ -268,11 +268,11 @@ export default function Dashboard() {
 
           {/* Daily P&L Chart */}
           <Card>
-            <CardHeader>
-              <CardTitle>{t('dashboard.dailyPnL')}</CardTitle>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm">{t('dashboard.dailyPnL')}</CardTitle>
             </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
+            <CardContent className="pb-2">
+              <ResponsiveContainer width="100%" height={250}>
                 <BarChart data={equityCurve}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                   <XAxis
@@ -317,37 +317,37 @@ export default function Dashboard() {
 
       {/* Recent Trades */}
       <Card>
-        <CardHeader>
-          <CardTitle>{t('dashboard.recentTrades')}</CardTitle>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm">{t('dashboard.recentTrades')}</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pb-2">
           {trades.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground">
+            <div className="text-center py-6">
+              <p className="text-sm text-muted-foreground">
                 {t('dashboard.noTradesMessage')}
               </p>
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               {trades.slice(0, 5).map(trade => (
                 <div
                   key={trade.id}
                   onClick={() => navigate(`/journal/${trade.id}`)}
-                  className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/50 transition-colors cursor-pointer"
+                  className="flex items-center justify-between p-2 border rounded-lg hover:bg-accent/50 transition-colors cursor-pointer"
                 >
                   <div className="flex-1">
-                    <div className="flex items-center gap-3">
-                      <div className="font-medium">{trade.pair}</div>
-                      <div className="text-xs px-2 py-1 rounded-full bg-accent">
+                    <div className="flex items-center gap-2">
+                      <div className="text-sm font-medium">{trade.pair}</div>
+                      <div className="text-[10px] px-1.5 py-0.5 rounded-full bg-accent">
                         {trade.position_type}
                       </div>
                     </div>
-                    <div className="text-sm text-muted-foreground mt-1">
+                    <div className="text-xs text-muted-foreground mt-0.5">
                       {trade.exchange} • {new Date(trade.trade_date * 1000).toLocaleDateString()}
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className={`font-medium ${
+                    <div className={`text-sm font-medium ${
                       trade.status === 'WIN' ? 'text-success' :
                       trade.status === 'LOSS' ? 'text-destructive' :
                       'text-muted-foreground'
@@ -355,7 +355,7 @@ export default function Dashboard() {
                       {trade.status}
                     </div>
                     {trade.total_pnl !== null && trade.total_pnl !== undefined && (
-                      <div className={`text-sm ${trade.total_pnl >= 0 ? 'text-success' : 'text-destructive'}`}>
+                      <div className={`text-xs ${trade.total_pnl >= 0 ? 'text-success' : 'text-destructive'}`}>
                         <CurrencyDisplay value={trade.total_pnl} />
                       </div>
                     )}
