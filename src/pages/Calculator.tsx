@@ -216,8 +216,8 @@ export default function Calculator() {
         </p>
       </div>
 
-      {/* Responsive layout: vertical on narrow screens, 3-column on wider screens */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+      {/* Responsive layout: vertical on narrow screens, 4-column on wider screens */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-3">
         {/* STEP 1: Strategy Settings */}
         <Card className="border-2 border-primary/20 bg-primary/5">
           <CardHeader className="pb-2 pt-3 px-3">
@@ -569,6 +569,17 @@ export default function Calculator() {
             </div>
           </CardContent>
         </Card>
+
+        {/* STEP 4: Visual Trade Setup */}
+        {showResults && metrics && isValid && (
+          <TradeSetupVisualizer
+            entries={validEntries}
+            stopLoss={sl}
+            takeProfits={validTps}
+            positionType={metrics.type}
+            metrics={metrics}
+          />
+        )}
       </div>
 
       {/* Validation Errors - Compact */}
@@ -712,17 +723,6 @@ export default function Calculator() {
             )}
           </CardContent>
         </Card>
-      )}
-
-      {/* Visual Trade Setup */}
-      {showResults && metrics && isValid && (
-        <TradeSetupVisualizer
-          entries={validEntries}
-          stopLoss={sl}
-          takeProfits={validTps}
-          positionType={metrics.type}
-          metrics={metrics}
-        />
       )}
     </div>
   );
