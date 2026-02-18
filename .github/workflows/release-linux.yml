@@ -42,7 +42,8 @@ jobs:
       - name: Build Linux AppImage
         run: npm run tauri build -- --bundles appimage
         env:
-          APPIMAGE_EXTRACT_AND_RUN: 1
+          APPIMAGE_EXTRACT_AND_RUN: "1"
+          NO_STRIP: "true"
       - name: Upload AppImage to Release
         uses: softprops/action-gh-release@v1
         with:
