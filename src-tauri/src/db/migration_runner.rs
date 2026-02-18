@@ -204,7 +204,7 @@ impl MigrationRunner {
         // on columns that already exist from a prior manual addition).
         for raw_stmt in migration.sql.split(';') {
             let stmt = raw_stmt.trim();
-            if stmt.is_empty() || stmt.starts_with("--") {
+            if stmt.is_empty() {
                 continue;
             }
             match tx.execute_batch(stmt) {
