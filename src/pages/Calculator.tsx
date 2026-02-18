@@ -34,7 +34,7 @@ const HelpTooltip = ({ title, content }: { title: string; content: string | Reac
       </button>
 
       {show && (
-        <div className="absolute z-50 left-0 top-full mt-2 w-80 p-4 bg-popover border border-border rounded-lg shadow-lg text-sm">
+        <div className="absolute z-50 left-1/2 -translate-x-1/2 sm:left-0 sm:translate-x-0 top-full mt-2 w-72 sm:w-80 max-w-[calc(100vw-2rem)] p-4 bg-popover border border-border rounded-lg shadow-lg text-sm">
           <div className="font-semibold mb-2">{title}</div>
           <div className="text-muted-foreground space-y-2">{content}</div>
         </div>
@@ -219,8 +219,8 @@ export default function Calculator() {
         </p>
       </div>
 
-      {/* Responsive layout: vertical on narrow screens, 4-column on wider screens */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-3">
+      {/* Responsive layout: vertical on narrow screens, 3-column on wider screens */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
         {/* STEP 1: Strategy Settings */}
         <Card className="border-2 border-primary/20 bg-primary/5">
           <CardHeader className="pb-1 sm:pb-2 pt-2 sm:pt-3 px-2 sm:px-3">
@@ -251,13 +251,14 @@ export default function Calculator() {
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsStrategyCollapsed(!isStrategyCollapsed)}
-                className="h-6 w-6 p-0"
+                className="h-6 w-6 p-0 lg:hidden"
               >
                 {isStrategyCollapsed ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
               </Button>
             </div>
           </CardHeader>
-          <CardContent className={cn("pt-0 px-2 sm:px-3 pb-2 sm:pb-3 space-y-1.5 sm:space-y-2", isStrategyCollapsed && "hidden")}>
+          <CardContent className={cn("pt-0 px-2 sm:px-3 pb-2 sm:pb-3 space-y-1.5 sm:space-y-2", isStrategyCollapsed && "hidden lg:block")}>
+
             {/* Mobile: 3 columns, Desktop: vertical */}
             <div className="grid grid-cols-3 sm:grid-cols-1 gap-1.5 sm:gap-0 sm:space-y-2">
               <div className="space-y-0.5 sm:space-y-1">
@@ -592,13 +593,15 @@ export default function Calculator() {
 
         {/* STEP 4: Visual Trade Setup - only show when data is entered */}
         {showResults && metrics && validEntries.length > 0 && sl > 0 && validTps.length > 0 && (
-          <TradeSetupVisualizer
-            entries={validEntries}
-            stopLoss={sl}
-            takeProfits={validTps}
-            positionType={metrics.type}
-            metrics={metrics}
-          />
+          <div className="lg:col-span-3">
+            <TradeSetupVisualizer
+              entries={validEntries}
+              stopLoss={sl}
+              takeProfits={validTps}
+              positionType={metrics.type}
+              metrics={metrics}
+            />
+          </div>
         )}
       </div>
 
