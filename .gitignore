@@ -29,9 +29,6 @@ src-tauri/target
 # Build temporary files
 .build-temp-unused
 
-# GitHub workflows and CI/CD
-.github
-
 # Internal documentation
 BUILD.md
 CLAUDE.md
