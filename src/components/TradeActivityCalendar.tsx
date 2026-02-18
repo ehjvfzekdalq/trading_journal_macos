@@ -167,18 +167,32 @@ export function TradeActivityCalendar({ trades }: TradeActivityCalendarProps) {
       <CardContent className="px-3 md:px-6">
         <div className="overflow-x-auto overflow-y-hidden">
           <div className="inline-block min-w-full pb-2">
-            {/* Month labels */}
-            <div className="flex items-center mb-1 ml-6 sm:ml-8 relative" style={{ height: '16px' }}>
+            {/* Month labels - Mobile */}
+            <div className="sm:hidden flex items-center mb-1 ml-6 relative" style={{ height: '16px' }}>
               {monthLabels.map((label, index) => (
                 <div
                   key={index}
-                  className="text-[9px] sm:text-[10px] text-muted-foreground absolute"
+                  className="text-[9px] text-muted-foreground absolute"
                   style={{
-                    left: `${label.offset * (window.innerWidth < 640 ? 9 : 11)}px`
+                    left: `${label.offset * 10}px`
                   }}
                 >
-                  <span className="sm:hidden">{label.month.charAt(0)}</span>
-                  <span className="hidden sm:inline">{label.month}</span>
+                  {label.month.charAt(0)}
+                </div>
+              ))}
+            </div>
+
+            {/* Month labels - Desktop */}
+            <div className="hidden sm:flex items-center mb-1 ml-8 relative" style={{ height: '16px' }}>
+              {monthLabels.map((label, index) => (
+                <div
+                  key={index}
+                  className="text-[10px] text-muted-foreground absolute"
+                  style={{
+                    left: `${label.offset * 13}px`
+                  }}
+                >
+                  {label.month}
                 </div>
               ))}
             </div>

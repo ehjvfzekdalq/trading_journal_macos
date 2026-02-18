@@ -5,7 +5,7 @@ import { api, type Trade, type DashboardStats, type EquityCurvePoint, type Setti
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { formatPercent, getDateRangeTimestamp, type DateRange } from '../lib/utils';
-import { TrendingUp, DollarSign, BarChart3, Calendar } from 'lucide-react';
+import { TrendingUp, TrendingDown, DollarSign, BarChart3, Calendar } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { HelpBadge } from '../components/HelpBadge';
 import { PositionMonitor } from '../components/PositionMonitor';
@@ -174,7 +174,7 @@ export default function Dashboard() {
       {stats && (
         <>
           {/* Stats Grid */}
-          <div className="grid gap-2 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+          <div className="grid gap-2 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 px-3 pt-3">
                 <CardTitle className="text-xs font-medium">{t('dashboard.totalTrades')}</CardTitle>
@@ -230,30 +230,39 @@ export default function Dashboard() {
                 </p>
               </CardContent>
             </Card>
+          </div>
 
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 px-3 pt-3">
-                <CardTitle className="text-xs font-medium">{t('dashboard.bestTrade')}</CardTitle>
-                <TrendingUp className="h-3 w-3 text-muted-foreground" />
-              </CardHeader>
-              <CardContent className="px-3 pb-3">
-                <div className="text-xl font-bold text-success">
-                  <CurrencyDisplay value={stats.best_trade} />
-                </div>
-              </CardContent>
-            </Card>
+          {/* Bento Layout: Best/Worst Trade + Calendar */}
+          <div className="grid gap-2 grid-cols-1 lg:grid-cols-[300px_1fr]">
+            {/* Left Column: Best & Worst Trade */}
+            <div className="grid gap-2 grid-cols-2 lg:grid-cols-1 lg:grid-rows-2">
+              <Card className="lg:h-full">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">{t('dashboard.bestTrade')}</CardTitle>
+                  <TrendingUp className="h-4 w-4 text-success" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-success">
+                    <CurrencyDisplay value={stats.best_trade} />
+                  </div>
+                </CardContent>
+              </Card>
 
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 px-3 pt-3">
-                <CardTitle className="text-xs font-medium">{t('dashboard.worstTrade')}</CardTitle>
-                <TrendingUp className="h-3 w-3 text-muted-foreground" />
-              </CardHeader>
-              <CardContent className="px-3 pb-3">
-                <div className="text-xl font-bold text-destructive">
-                  <CurrencyDisplay value={stats.worst_trade} />
-                </div>
-              </CardContent>
-            </Card>
+              <Card className="lg:h-full">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">{t('dashboard.worstTrade')}</CardTitle>
+                  <TrendingDown className="h-4 w-4 text-destructive" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-destructive">
+                    <CurrencyDisplay value={stats.worst_trade} />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Right Column: Trading Activity Calendar */}
+            <TradeActivityCalendar trades={trades} />
           </div>
         </>
       )}
@@ -349,9 +358,6 @@ export default function Dashboard() {
           </Card>
         </div>
       )}
-
-      {/* Trading Activity Calendar */}
-      <TradeActivityCalendar trades={trades} />
 
       {/* Recent Trades */}
       <Card>

@@ -7,7 +7,7 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
-import { Copy, Check, AlertCircle, Save, HelpCircle, ArrowRight, Plus, X } from 'lucide-react';
+import { Copy, Check, AlertCircle, Save, HelpCircle, ArrowRight, Plus, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { calculateTradeMetrics } from '../lib/calculations';
 import { formatCurrency, formatPercent, formatRR, cn } from '../lib/utils';
 import { validateAllocation } from '../lib/validations';
@@ -67,6 +67,9 @@ export default function Calculator() {
 
   const [copied, setCopied] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+
+  // Collapsible state for Strategy Settings (collapsed by default)
+  const [isStrategyCollapsed, setIsStrategyCollapsed] = useState(true);
 
   // Load settings on mount
   useEffect(() => {
@@ -221,30 +224,40 @@ export default function Calculator() {
         {/* STEP 1: Strategy Settings */}
         <Card className="border-2 border-primary/20 bg-primary/5">
           <CardHeader className="pb-1 sm:pb-2 pt-2 sm:pt-3 px-2 sm:px-3">
-            <div className="flex items-center gap-1 sm:gap-1.5">
-              <div className="flex h-4 w-4 sm:h-5 sm:w-5 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-[10px] sm:text-xs font-bold">
-                1
+            <div className="flex items-center justify-between w-full">
+              <div className="flex items-center gap-1 sm:gap-1.5">
+                <div className="flex h-4 w-4 sm:h-5 sm:w-5 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-[10px] sm:text-xs font-bold">
+                  1
+                </div>
+                <CardTitle className="text-xs sm:text-sm">
+                  {t('calculator.strategySettings') || 'Strategy'}
+                </CardTitle>
+                <HelpTooltip
+                  title={t('calculator.helpStrategyTitle')}
+                  content={
+                    <div>
+                      <p className="mb-2">{t('calculator.helpStrategyIntro')}</p>
+                      <ul className="list-disc list-inside space-y-1">
+                        <li>{t('calculator.helpStrategyPortfolio')}</li>
+                        <li>{t('calculator.helpStrategyRPercent')}</li>
+                        <li>{t('calculator.helpStrategyMinRR')}</li>
+                      </ul>
+                      <p className="mt-2"><strong>{t('calculator.helpStrategyFormula')}</strong></p>
+                    </div>
+                  }
+                />
               </div>
-              <CardTitle className="text-xs sm:text-sm">
-                {t('calculator.strategySettings') || 'Strategy'}
-              </CardTitle>
-              <HelpTooltip
-                title={t('calculator.helpStrategyTitle')}
-                content={
-                  <div>
-                    <p className="mb-2">{t('calculator.helpStrategyIntro')}</p>
-                    <ul className="list-disc list-inside space-y-1">
-                      <li>{t('calculator.helpStrategyPortfolio')}</li>
-                      <li>{t('calculator.helpStrategyRPercent')}</li>
-                      <li>{t('calculator.helpStrategyMinRR')}</li>
-                    </ul>
-                    <p className="mt-2"><strong>{t('calculator.helpStrategyFormula')}</strong></p>
-                  </div>
-                }
-              />
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsStrategyCollapsed(!isStrategyCollapsed)}
+                className="h-6 w-6 p-0"
+              >
+                {isStrategyCollapsed ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
+              </Button>
             </div>
           </CardHeader>
-          <CardContent className="pt-0 px-2 sm:px-3 pb-2 sm:pb-3 space-y-1.5 sm:space-y-2">
+          <CardContent className={cn("pt-0 px-2 sm:px-3 pb-2 sm:pb-3 space-y-1.5 sm:space-y-2", isStrategyCollapsed && "hidden")}>
             {/* Mobile: 3 columns, Desktop: vertical */}
             <div className="grid grid-cols-3 sm:grid-cols-1 gap-1.5 sm:gap-0 sm:space-y-2">
               <div className="space-y-0.5 sm:space-y-1">
