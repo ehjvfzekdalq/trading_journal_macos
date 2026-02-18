@@ -127,6 +127,11 @@ impl MigrationRunner {
                 "add_feature_flags",
                 include_str!("migrations/008_add_feature_flags.sql"),
             ),
+            Migration::new(
+                9,
+                "ensure_execution_columns",
+                include_str!("migrations/009_ensure_execution_columns.sql"),
+            ),
         ]
     }
 
@@ -194,8 +199,30 @@ impl MigrationRunner {
         // Start transaction
         let tx = conn.unchecked_transaction()?;
 
-        // Execute migration SQL
-        tx.execute_batch(migration.sql)?;
+        // Execute migration SQL - run each statement individually so we can
+        // gracefully skip "duplicate column" errors (ALTER TABLE ADD COLUMN
+        // on columns that already exist from a prior manual addition).
+        for raw_stmt in migration.sql.split(';') {
+            let stmt = raw_stmt.trim();
+            if stmt.is_empty() || stmt.starts_with("--") {
+                continue;
+            }
+            match tx.execute_batch(stmt) {
+                Ok(_) => {}
+                Err(e) => {
+                    let msg = e.to_string().to_lowercase();
+                    if msg.contains("duplicate column name") || msg.contains("already has a column") {
+                        log_warn!(
+                            "Skipping already-existing column in migration '{}': {}",
+                            migration.name,
+                            e
+                        );
+                    } else {
+                        return Err(e);
+                    }
+                }
+            }
+        }
 
         // Record migration
         let now = current_timestamp();
