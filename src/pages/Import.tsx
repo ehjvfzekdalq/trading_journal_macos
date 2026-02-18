@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
@@ -8,21 +8,23 @@ import { formatCurrency } from '../lib/utils';
 import { ArrowLeft, Upload, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { HelpBadge } from '../components/HelpBadge';
 import { open } from '@tauri-apps/plugin-dialog';
-import { getCurrentWindow } from '@tauri-apps/api/window';
+import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { ErrorDialog } from '../components/ErrorDialog';
 import { ImportResultDialog } from '../components/ImportResultDialog';
 
 type Exchange = 'BitGet' | 'BloFin';
 
-// Type definitions for Tauri file drop events
-interface FileDropPayload {
-  type: 'hover' | 'drop' | 'cancel';
+// Tauri v2 drag-drop event types
+type DragDropEventType = 'enter' | 'over' | 'drop' | 'leave';
+
+interface DragDropPayload {
+  type: DragDropEventType;
   paths?: string[];
 }
 
-interface FileDropEvent {
-  payload: FileDropPayload;
+interface DragDropEvent {
+  payload: DragDropPayload;
 }
 
 type UnlistenFn = () => void;
@@ -44,29 +46,33 @@ export default function Import() {
   const [confirmImportDialog, setConfirmImportDialog] = useState(false);
   const [importResultDialog, setImportResultDialog] = useState<{ open: boolean; result: { imported: number; duplicates: number; errors: string[] } | null }>({ open: false, result: null });
 
-  // Set up Tauri file drop listener
+  // Keep a ref so the drop handler always calls the current processFile
+  // (avoids stale closure since the useEffect runs only once)
+  const processFileRef = useRef<(content: string) => Promise<void>>(async () => {});
+
+  // Set up Tauri v2 drag-drop listener (onDragDropEvent on WebviewWindow)
   useEffect(() => {
-    const appWindow = getCurrentWindow();
-    let unlistenFn: (() => void) | undefined;
+    const webviewWindow = getCurrentWebviewWindow();
+    let unlistenFn: UnlistenFn | undefined;
     let isMounted = true;
 
     const setupFileDrop = async () => {
       try {
-        const unlisten = await (appWindow as typeof appWindow & {
-          onFileDropEvent: (handler: (event: FileDropEvent) => void | Promise<void>) => Promise<UnlistenFn>
-        }).onFileDropEvent(async (event: FileDropEvent) => {
-          if (event.payload.type === 'hover') {
+        const unlisten = await (webviewWindow as typeof webviewWindow & {
+          onDragDropEvent: (handler: (event: DragDropEvent) => void | Promise<void>) => Promise<UnlistenFn>
+        }).onDragDropEvent(async (event: DragDropEvent) => {
+          const { type, paths } = event.payload;
+          if (type === 'enter' || type === 'over') {
             setIsDragging(true);
-          } else if (event.payload.type === 'drop') {
+          } else if (type === 'drop') {
             setIsDragging(false);
-            const paths = event.payload.paths;
             if (paths && paths.length > 0) {
               const filePath = paths[0];
               if (filePath.endsWith('.csv')) {
                 try {
                   const { readTextFile } = await import('@tauri-apps/plugin-fs');
                   const content = await readTextFile(filePath);
-                  await processFile(content);
+                  await processFileRef.current(content);
                 } catch (error) {
                   setErrorDialog({ open: true, message: 'Failed to read file: ' + error });
                 }
@@ -74,7 +80,7 @@ export default function Import() {
                 setErrorDialog({ open: true, message: 'Please drop a CSV file' });
               }
             }
-          } else if (event.payload.type === 'cancel') {
+          } else if (type === 'leave') {
             setIsDragging(false);
           }
         });
@@ -85,7 +91,7 @@ export default function Import() {
           unlisten();
         }
       } catch (error) {
-        console.error('Failed to set up file drop listener:', error);
+        console.error('Failed to set up drag-drop listener:', error);
       }
     };
 
@@ -93,9 +99,7 @@ export default function Import() {
 
     return () => {
       isMounted = false;
-      if (unlistenFn) {
-        unlistenFn();
-      }
+      if (unlistenFn) unlistenFn();
     };
   }, []);
 
@@ -137,6 +141,10 @@ export default function Import() {
       await previewImport(content, portfolio, rPercent / 100);
     }
   };
+
+  // Keep the ref pointing to the latest processFile after every render
+  // so the drag-drop handler (set up once) never has a stale closure
+  processFileRef.current = processFile;
 
   const previewImport = async (content: string, port: number, rPct: number) => {
     setLoading(true);
