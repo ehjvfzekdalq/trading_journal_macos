@@ -13,6 +13,7 @@ import { CurrencyDisplay } from '../components/CurrencyDisplay';
 import { AnonymousToggle } from '../components/AnonymousToggle';
 import { useAnonymousMode } from '../contexts/AnonymousModeContext';
 import { createCurrencyFormatter, createTooltipFormatter } from '../lib/chartUtils';
+import { TradeActivityCalendar } from '../components/TradeActivityCalendar';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -173,7 +174,7 @@ export default function Dashboard() {
       {stats && (
         <>
           {/* Stats Grid */}
-          <div className="grid gap-2 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7">
+          <div className="grid gap-2 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 px-3 pt-3">
                 <CardTitle className="text-xs font-medium">{t('dashboard.totalTrades')}</CardTitle>
@@ -250,18 +251,6 @@ export default function Dashboard() {
               <CardContent className="px-3 pb-3">
                 <div className="text-xl font-bold text-destructive">
                   <CurrencyDisplay value={stats.worst_trade} />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 px-3 pt-3">
-                <CardTitle className="text-xs font-medium">{t('dashboard.avgEffectiveRR')}</CardTitle>
-                <TrendingUp className="h-3 w-3 text-muted-foreground" />
-              </CardHeader>
-              <CardContent className="px-3 pb-3">
-                <div className="text-xl font-bold">
-                  {stats.avg_effective_rr.toFixed(2)}:1
                 </div>
               </CardContent>
             </Card>
@@ -360,6 +349,9 @@ export default function Dashboard() {
           </Card>
         </div>
       )}
+
+      {/* Trading Activity Calendar */}
+      <TradeActivityCalendar trades={trades} />
 
       {/* Recent Trades */}
       <Card>

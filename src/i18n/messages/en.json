@@ -36,6 +36,7 @@
     "equityCurve": "Equity Curve",
     "recentTrades": "Recent Trades",
     "noTradesMessage": "No trades yet. Create your first trade to get started!",
+    "tradesInYear": "trades in",
     "dateRange": {
       "today": "Today",
       "lastWeek": "Last W",
@@ -57,6 +58,7 @@
     "noTradesMessage": "No trades yet. Create your first trade to get started!",
     "noTradesFound": "No trades found matching your search. Try a different query.",
     "noTradesInFilter": "No trades match the current filters.",
+    "filteringByDate": "Filtering by date",
     "pair": "Pair",
     "exchange": "Exchange",
     "date": "Date",

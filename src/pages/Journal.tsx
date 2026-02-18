@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { api, type Trade } from '../lib/api';
 import { Button } from '../components/ui/button';
@@ -19,12 +19,24 @@ type StatusFilter = 'all' | 'OPEN' | 'WIN' | 'LOSS' | 'BE';
 export default function Journal() {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [trades, setTrades] = useState<Trade[]>([]);
   const [loading, setLoading] = useState(true);
   const [dateRange, setDateRange] = useState<DateRange>('all');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [trashOpen, setTrashOpen] = useState(false);
+  const [specificDate, setSpecificDate] = useState<string | null>(null);
+
+  // Check for date parameter in URL
+  useEffect(() => {
+    const dateParam = searchParams.get('date');
+    if (dateParam) {
+      setSpecificDate(dateParam);
+      // Clear the URL parameter after reading it
+      setSearchParams({});
+    }
+  }, [searchParams, setSearchParams]);
 
   useEffect(() => {
     loadTrades();
@@ -50,25 +62,34 @@ export default function Journal() {
     }
   };
 
-  // Client-side filter for search (must be before early return)
+  // Client-side filter for search and specific date (must be before early return)
   const filteredTrades = useMemo(() => {
-    if (!searchQuery || !searchQuery.trim()) {
-      return trades;
+    let filtered = trades;
+
+    // Apply specific date filter if set
+    if (specificDate) {
+      filtered = filtered.filter(trade => {
+        const tradeDate = new Date(trade.trade_date * 1000).toISOString().split('T')[0];
+        return tradeDate === specificDate;
+      });
     }
 
-    const query = searchQuery.toLowerCase().replace(/[^a-z0-9]/g, '');
-    if (!query) {
-      return trades;
-    }
-
-    return trades.filter(trade => {
-      if (!trade || !trade.pair) {
-        return false;
+    // Apply search filter
+    if (searchQuery && searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().replace(/[^a-z0-9]/g, '');
+      if (query) {
+        filtered = filtered.filter(trade => {
+          if (!trade || !trade.pair) {
+            return false;
+          }
+          const pair = trade.pair.toLowerCase().replace(/[^a-z0-9]/g, '');
+          return pair.includes(query);
+        });
       }
-      const pair = trade.pair.toLowerCase().replace(/[^a-z0-9]/g, '');
-      return pair.includes(query);
-    });
-  }, [trades, searchQuery]);
+    }
+
+    return filtered;
+  }, [trades, searchQuery, specificDate]);
 
   if (loading) {
     return <div className="text-muted-foreground">Loading...</div>;
@@ -142,6 +163,23 @@ export default function Journal() {
             </Button>
           )}
         </div>
+
+        {/* Specific Date Filter Badge */}
+        {specificDate && (
+          <div className="flex items-center gap-2">
+            <Badge variant="secondary" className="text-xs">
+              {t('journal.filteringByDate') || 'Filtering by date'}: {new Date(specificDate).toLocaleDateString()}
+            </Badge>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSpecificDate(null)}
+              className="h-7 text-xs"
+            >
+              {t('common.clear') || 'Clear'}
+            </Button>
+          </div>
+        )}
 
         {/* Date Range Filter */}
         <div className="flex items-center gap-2">

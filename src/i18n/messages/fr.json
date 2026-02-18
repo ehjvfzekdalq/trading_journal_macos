@@ -36,6 +36,7 @@
     "equityCurve": "Courbe d'Équité",
     "recentTrades": "Trades Récents",
     "noTradesMessage": "Aucun trade pour l'instant. Créez votre premier trade pour commencer !",
+    "tradesInYear": "trades en",
     "dateRange": {
       "today": "Aujourd'hui",
       "lastWeek": "Dern. S",
@@ -57,6 +58,7 @@
     "noTradesMessage": "Aucun trade pour l'instant. Créez votre premier trade pour commencer !",
     "noTradesFound": "Aucun trade correspondant à votre recherche. Essayez une autre requête.",
     "noTradesInFilter": "Aucun trade ne correspond aux filtres actuels.",
+    "filteringByDate": "Filtrage par date",
     "pair": "Paire",
     "exchange": "Exchange",
     "date": "Date",
