@@ -146,6 +146,16 @@ export default function Import() {
   // so the drag-drop handler (set up once) never has a stale closure
   processFileRef.current = processFile;
 
+  // Ref for the preview section — used to auto-scroll when trades are detected
+  const previewRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to preview as soon as trades/positions are detected
+  useEffect(() => {
+    if (previews.length > 0) {
+      previewRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [previews.length]);
+
   const previewImport = async (content: string, port: number, rPct: number) => {
     setLoading(true);
     setImportResult(null);
@@ -322,7 +332,7 @@ export default function Import() {
 
       {/* Preview */}
       {previews.length > 0 && !importResult && (
-        <Card>
+        <Card ref={previewRef}>
           <CardHeader>
             <CardTitle>Preview ({previews.length} {selectedExchange === 'BloFin' ? 'positions' : 'trades'})</CardTitle>
           </CardHeader>
