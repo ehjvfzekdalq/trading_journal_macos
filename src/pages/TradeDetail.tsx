@@ -733,8 +733,8 @@ export default function TradeDetail() {
           <CardHeader className="bg-primary/10 pb-2 md:pb-3">
             <CardTitle className="text-sm md:text-base">{t('tradeDetail.tradeResults') || 'Résultats du trade'}</CardTitle>
           </CardHeader>
-          <CardContent className="pt-3 md:pt-4">
-            {/* Single row: P&L and RR */}
+          <CardContent className="pt-3 md:pt-4 space-y-3">
+            {/* Row 1: P&L and RR */}
             <div className="grid grid-cols-2 gap-3 md:gap-4">
               {/* P&L Realized */}
               <div className="flex flex-col items-center justify-center p-2 md:p-3 bg-muted/50 rounded-lg">
@@ -750,6 +750,37 @@ export default function TradeDetail() {
               <div className="flex flex-col items-center justify-center p-2 md:p-3 bg-muted/50 rounded-lg">
                 <div className="text-xs text-muted-foreground mb-1">{t('tradeDetail.effectiveRR')}</div>
                 <div className="text-lg md:text-2xl font-bold">{formatRR(executionMetrics.effectiveRR)}</div>
+              </div>
+            </div>
+
+            {/* Row 2: PE(s), SL, TP(s) - Condensed View */}
+            <div className="grid grid-cols-3 gap-2 md:gap-3 text-xs">
+              {/* PE(s) */}
+              <div className="flex flex-col items-center justify-center p-2 bg-muted/30 rounded">
+                <div className="text-[10px] text-muted-foreground mb-1">PE(s)</div>
+                <div className="font-mono text-[10px] md:text-xs">
+                  {plannedEntries.filter(e => e.price > 0).map((e, i) => (
+                    <div key={i}>{parseFloat(e.price.toFixed(8))}</div>
+                  ))}
+                </div>
+              </div>
+
+              {/* SL */}
+              <div className="flex flex-col items-center justify-center p-2 bg-destructive/10 rounded">
+                <div className="text-[10px] text-muted-foreground mb-1">SL</div>
+                <div className="font-mono text-[10px] md:text-xs text-destructive font-semibold">
+                  {parseFloat(plannedSl.toFixed(8))}
+                </div>
+              </div>
+
+              {/* TP(s) */}
+              <div className="flex flex-col items-center justify-center p-2 bg-success/10 rounded">
+                <div className="text-[10px] text-muted-foreground mb-1">TP(s)</div>
+                <div className="font-mono text-[10px] md:text-xs text-success">
+                  {plannedTps.filter(tp => tp.price > 0).map((tp, i) => (
+                    <div key={i}>{parseFloat(tp.price.toFixed(8))}</div>
+                  ))}
+                </div>
               </div>
             </div>
           </CardContent>
