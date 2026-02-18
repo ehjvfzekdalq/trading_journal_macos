@@ -10,7 +10,7 @@
  */
 
 /** Green — profits, wins, long positions, success states */
-export const PROFIT_COLOR = "#9CAF88";
+export const PROFIT_COLOR = "#72bf6a";
 
 /** Red — losses, errors, short positions, danger states */
 export const LOSS_COLOR = "#f94449";

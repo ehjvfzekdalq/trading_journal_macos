@@ -779,8 +779,8 @@ export default function TradeDetail() {
             </CardHeader>
             <CardContent className={cn("space-y-4 pt-6", isPlanCollapsed && "hidden md:block")}>
               {/* Dates - Editable */}
-              <div className="border-2 border-violet-500 rounded-lg p-4">
-                <div className="text-sm font-semibold text-violet-600 mb-3">{t('tradeDetail.dates') || 'Dates'}</div>
+              <div className="border-2 border-white rounded-lg p-4">
+                <div className="text-sm font-semibold mb-3">{t('tradeDetail.dates')}</div>
                 <div className="grid gap-3 grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="analysisDate" className="text-xs">{t('tradeDetail.analysisDate')}</Label>
@@ -806,7 +806,7 @@ export default function TradeDetail() {
               </div>
 
               {/* Position Metrics Editor - Plan Section */}
-              <div className="border-2 border-violet-500 rounded-lg p-4">
+              <div className="border-2 border-white rounded-lg p-4">
                 <PositionMetricsEditor
                   entryPrice={(() => {
                     const validEntries = plannedEntries.filter(e => e.price > 0 && e.percent > 0);
@@ -837,10 +837,10 @@ export default function TradeDetail() {
               </div>
 
               {/* Planned Entries (Multi-PE) - Editable */}
-              <div className="border-2 border-violet-500 rounded-lg p-4 space-y-3">
+              <div className="border-2 border-white rounded-lg p-4 space-y-3">
                 <div className="flex items-center justify-between">
-                  <Label className="text-sm font-semibold text-violet-600">
-                    {t('tradeDetail.plannedEntries') || 'Planned Entries'}
+                  <Label className="text-sm font-semibold">
+                    {t('tradeDetail.plannedEntries')}
                   </Label>
                   <Button
                     type="button"
@@ -919,8 +919,8 @@ export default function TradeDetail() {
               </div>
 
               {/* Stop Loss & Leverage - Editable */}
-              <div className="border-2 border-violet-500 rounded-lg p-4">
-                <div className="text-sm font-semibold text-violet-600 mb-3">{t('tradeDetail.stopLossAndLeverage') || 'Stop Loss & Leverage'}</div>
+              <div className="border-2 border-destructive rounded-lg p-4">
+                <div className="text-sm font-semibold text-destructive mb-3">{t('tradeDetail.stopLossAndLeverage')}</div>
                 <div className="grid gap-3 grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="plannedSl" className="text-xs">{t('tradeNew.stopLossRequired')}</Label>
@@ -955,8 +955,8 @@ export default function TradeDetail() {
               </div>
 
               {/* Take Profits - Editable */}
-              <div className="border-2 border-violet-500 rounded-lg p-4 space-y-3">
-                <div className="text-sm font-semibold text-violet-600">{t('tradeDetail.plannedTakeProfits')}</div>
+              <div className="border-2 border-success rounded-lg p-4 space-y-3">
+                <div className="text-sm font-semibold text-success">{t('tradeDetail.plannedTakeProfits')}</div>
                 {plannedTps.map((tp, index) => (
                   <div key={index} className="grid gap-3 grid-cols-2">
                     <div className="space-y-1">
@@ -1011,8 +1011,8 @@ export default function TradeDetail() {
               </div>
 
               {/* Position Details */}
-              <div className="border-2 border-violet-500 rounded-lg p-4 space-y-2">
-                <div className="text-sm font-semibold text-violet-600 mb-3">{t('calculator.position')}</div>
+              <div className="border-2 border-white rounded-lg p-4 space-y-2">
+                <div className="text-sm font-semibold mb-3">{t('calculator.position')}</div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="p-2 bg-muted/50 rounded">
                     <div className="text-xs text-muted-foreground">{t('tradeDetail.positionSize')}</div>
@@ -1084,7 +1084,7 @@ export default function TradeDetail() {
             </CardHeader>
             <CardContent className={cn("space-y-4 pt-6", isExecutionCollapsed && "hidden md:block")}>
               {/* Position Metrics Editor - Execution Section */}
-              <div className="pb-3 border-b">
+              <div className="border-2 border-white rounded-lg p-4">
                 <PositionMetricsEditor
                   entryPrice={(() => {
                     const validEntries = effectiveEntries.filter(e => e.price > 0 && e.percent > 0);
@@ -1115,10 +1115,10 @@ export default function TradeDetail() {
               </div>
 
               {/* Effective Entries (Multi-PE) */}
-              <div className="space-y-3 pt-3">
+              <div className="border-2 border-white rounded-lg p-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <Label className="text-sm font-semibold">
-                    {t('tradeDetail.effectiveEntries') || 'Actual Entries'}
+                    {t('tradeDetail.effectiveEntries')}
                   </Label>
                   <Button
                     type="button"
@@ -1225,9 +1225,19 @@ export default function TradeDetail() {
               </div>
 
               {/* Exit Points */}
-              <div className="space-y-3 pt-3 border-t">
+              <div className={cn(
+                "border-2 rounded-lg p-4 space-y-3",
+                trade.status === 'WIN' ? "border-success" :
+                trade.status === 'LOSS' ? "border-destructive" :
+                "border-white"
+              )}>
                 <div className="flex items-center justify-between">
-                  <Label className="text-sm font-semibold">{t('tradeNew.actualExits')}</Label>
+                  <Label className={cn(
+                    "text-sm font-semibold",
+                    trade.status === 'WIN' ? "text-success" :
+                    trade.status === 'LOSS' ? "text-destructive" :
+                    ""
+                  )}>{t('tradeNew.actualExits')}</Label>
                   <Button
                     type="button"
                     variant="outline"
@@ -1244,12 +1254,25 @@ export default function TradeDetail() {
 
                 {exits.map((exit, index) => (
                   <div key={index} className="p-3 border rounded-lg space-y-3 bg-muted/30">
+                    {/* Planned Setup - Mobile: separate row, show all TPs */}
+                    {index === 0 && plannedTps.length > 0 && (
+                      <div className="text-xs text-muted-foreground md:hidden space-y-1">
+                        <div className="font-semibold">{t('tradeNew.plannedSetup')}:</div>
+                        {plannedTps.filter(tp => tp.price > 0).map((tp, tpIndex) => (
+                          <div key={tpIndex}>
+                            TP{tpIndex + 1}: {tp.percent?.toFixed(0)}% @ ${parseFloat(tp.price?.toFixed(8))}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
                     <div className="flex items-center justify-between">
                       <Badge variant="outline">{t('import.exit')} {index + 1}</Badge>
                       <div className="flex items-center gap-2">
+                        {/* Planned Setup - Desktop: inline, show matching TP */}
                         {plannedTps[index]?.percent != null && (
-                          <span className="text-xs text-muted-foreground">
-                            {t('tradeNew.plannedSetup')}: {plannedTps[index]?.percent?.toFixed(1)}% @ ${plannedTps[index]?.price?.toFixed(8)}
+                          <span className="hidden md:inline text-xs text-muted-foreground">
+                            Prévu: {plannedTps[index]?.percent?.toFixed(0)}% @ ${parseFloat(plannedTps[index]?.price?.toFixed(8))}
                           </span>
                         )}
                         {exits.length > 1 && (
@@ -1332,9 +1355,9 @@ export default function TradeDetail() {
               )}
 
               {/* Close Date */}
-              <div className="space-y-3 pt-3 border-t">
+              <div className="border-2 border-white rounded-lg p-4 space-y-3">
                 <div className="space-y-2">
-                  <Label htmlFor="closeDate" className="text-xs font-semibold">{t('tradeDetail.closeDate')}</Label>
+                  <Label htmlFor="closeDate" className="text-sm font-semibold">{t('tradeDetail.closeDate')}</Label>
                   <Input
                     id="closeDate"
                     type="date"
