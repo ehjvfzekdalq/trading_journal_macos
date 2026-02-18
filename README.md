@@ -1,257 +1,216 @@
-# Trading Journal - macOS Native App
+# Trading Journal
 
-A full-featured native macOS trading journal application built with Tauri, React, and TypeScript. This is a completely separate project from the Next.js web version, designed specifically for desktop use.
+A native desktop trading journal application built with Tauri, React, and TypeScript. Track trades, analyze performance, and sync positions from exchanges — all stored locally.
 
-## 🚀 Current Status: v0.9-alpha (Feature Complete - 95% Complete)
+**Current version: v1.1.1**
 
-### ✅ Completed
+---
 
-**Backend (Rust/Tauri)** - 16/18 commands
-- ✅ SQLite database with full schema + indexes
-- ✅ Database connection and initialization
-- ✅ Data models (Trade, Settings, DashboardStats, EquityCurvePoint)
-- ✅ Tauri commands (16 implemented):
-  - `get_settings` - Fetch portfolio settings
-  - `update_settings` - Update portfolio settings
-  - `get_trades` - List all trades with filtering
-  - `get_trade` - Get single trade by ID
-  - `create_trade` - Create new trade
-  - `update_trade` - Update existing trade ✨ NEW
-  - `delete_trade` - Delete trade
-  - `duplicate_trade` - Clone trade
-  - `delete_all_trades` - Bulk delete
-  - `get_dashboard_stats` - Rich analytics
-  - `get_equity_curve` - Time-series P&L data
-  - `preview_bitget_import` - Preview CSV import ✨ NEW
-  - `import_bitget_csv` - Import BitGet trades ✨ NEW
-  - `delete_bitget_trades` - Delete imported trades ✨ NEW
-  - `export_all_data` - JSON backup ✨ NEW
-  - `import_all_data` - JSON restore ✨ NEW
+## Platforms
 
-**Frontend (React)** - 7/7 pages (All Complete!)
-- ✅ React Router setup with navigation
-- ✅ i18next for EN/FR translations
-- ✅ Type-safe API wrapper for all Tauri commands
-- ✅ Layout with sidebar navigation
-- ✅ Dashboard page (7 stat cards, equity curve chart, daily P&L chart, recent trades)
-- ✅ Journal page (trade list with view/delete buttons)
-- ✅ New Trade page (full creation form, multi-TP support)
-- ✅ Trade Detail page (view/edit, execution tracking, P&L calculation)
-- ✅ Import page (BitGet CSV import with preview) ✨ NEW
-- ✅ Settings page (portfolio configuration + backup/restore) ✨ ENHANCED
-- ✅ Calculator page (full implementation, copy-to-clipboard)
-- ✅ All UI components copied from Next.js
-- ✅ Business logic (calculations.ts, validations.ts, utils.ts)
-- ✅ Tailwind CSS with dark theme
+| Platform | Format | Notes |
+|----------|--------|-------|
+| macOS | `.dmg` | Universal binary (Intel + Apple Silicon) |
+| Windows | `.msi` / `.exe` | NSIS and MSI installers |
+| Linux | `.AppImage` | Built on Arch Linux, portable |
 
-### 🚧 In Progress / TODO
+---
 
-**Backend Commands to Add** (2 optional)
-- [ ] `get_trades_count` - Count filtered trades (for pagination)
-- [ ] `send_notification` - Native notifications
+## Features
 
-**Frontend Enhancements** (Optional)
-- [ ] Onboarding dialog for first-time users
-- [ ] Date range filter for dashboard/charts
-- [ ] Advanced trade filters (status, pair, exchange)
-- [ ] Pagination for trade list
+### Trade Journal
+- Create, edit, duplicate, and delete trades
+- Full trade lifecycle: planned → active → closed
+- Multi-take-profit support with individual tracking
+- Execution calculations (portfolio %, R multiple, margin, position size, quantity)
+- Soft delete with restore (trades are recoverable)
+- Filter and sort by status, pair, exchange, direction
 
-**Native macOS Features (Phase 2)**
-- [ ] Native menu bar (File, Edit, View, Window, Help)
-- [ ] System tray with real-time stats
-- [ ] Native notifications
-- [ ] Keyboard shortcuts
-- [ ] File dialogs for import/export
+### Dashboard & Analytics
+- 7 key performance metrics (win rate, total P&L, average R, best/worst trade, etc.)
+- Equity curve chart (cumulative P&L over time)
+- Daily P&L bar chart
+- Recent trades list
 
-## 📋 Prerequisites
+### Exchange Integration (BitGet)
+- Manual CSV import with preview
+- API credentials management (stored securely in system keychain)
+- Automatic sync on configurable intervals
+- Sync history log
+- Live mirror mode (real-time position monitoring)
 
-Before running this project, you need:
+### Position Monitor
+- View open orders and current positions from connected exchanges
+- Unrealized P&L tracking
 
-1. **Node.js 18+** and **npm**
-2. **Rust** (install from https://rustup.rs/)
-   ```bash
-   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-   ```
-3. **Tauri CLI**
-   ```bash
-   npm install -g @tauri-apps/cli@next
-   ```
+### Anonymous Mode
+- Hide all dollar values with a single toggle
+- R multiples, percentages, and ratios remain visible
+- Persists across sessions
 
-## 🛠️ Development
+### Import / Export
+- Full JSON backup and restore
+- Compatible with backups from older versions of the app
 
-### Install Dependencies
+### Settings
+- Portfolio configuration (starting capital, default risk %)
+- Exchange API credentials
+- Privacy settings (anonymous mode)
+- Feature flags (Position Monitor, API connections)
+- Language selection (English / French)
+
+---
+
+## Installation
+
+Download the latest release for your platform from the [Releases page](../../releases).
+
+### macOS — Gatekeeper
+
+The app is not notarized. On first launch, macOS may block it. To open it:
+
+1. Open **System Settings → Privacy & Security**
+2. Scroll down and click **"Open Anyway"** next to the blocked app
+
+Or via terminal:
+```bash
+xattr -cr /Applications/Trading\ Journal.app
+```
+
+### Linux — AppImage
+
+```bash
+chmod +x Trading-Journal_*.AppImage
+./Trading-Journal_*.AppImage
+```
+
+---
+
+## Development
+
+### Prerequisites
+
+- **Node.js 20+** and **npm**
+- **Rust** — [rustup.rs](https://rustup.rs/)
+  ```bash
+  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+  ```
+- **Linux only** — system libraries:
+  ```bash
+  # Arch Linux
+  sudo pacman -S webkit2gtk-4.1 gtk3 libayatana-appindicator librsvg patchelf base-devel
+
+  # Ubuntu/Debian
+  sudo apt-get install libgtk-3-dev libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev patchelf
+  ```
+
+### Run
+
 ```bash
 npm install
+npm run tauri dev
 ```
 
-### Run Development Mode
+### Build
+
 ```bash
-npm run tauri:dev
+npm run tauri build
 ```
 
-This will:
-1. Start the Vite dev server (frontend)
-2. Launch the Tauri app with hot-reload
+Output: `src-tauri/target/release/bundle/`
 
-### Build for Production
-```bash
-npm run tauri:build
-```
+---
 
-This creates a `.app` bundle and `.dmg` installer in:
-```
-src-tauri/target/release/bundle/
-```
-
-## 📁 Project Structure
+## Project Structure
 
 ```
 trading-journal-macos/
 ├── src/                          # Frontend (React + TypeScript)
-│   ├── components/               # UI components (from Next.js)
-│   │   ├── ui/                   # shadcn/ui components
+│   ├── components/               # UI components (shadcn/ui)
+│   │   ├── ui/                   # Base components
 │   │   ├── charts/               # Trading charts
 │   │   └── ...
+│   ├── context/                  # React contexts (anonymous mode, etc.)
 │   ├── lib/                      # Business logic
 │   │   ├── api.ts                # Tauri command wrappers
 │   │   ├── calculations.ts       # Trade formulas
-│   │   ├── validations.ts        # Validation logic
+│   │   ├── validations.ts        # Input validation
 │   │   └── utils.ts              # Utilities
-│   ├── pages/                    # React Router pages
-│   │   ├── Dashboard.tsx
-│   │   ├── Calculator.tsx
-│   │   ├── Journal.tsx
-│   │   ├── Settings.tsx
-│   │   └── Layout.tsx
-│   ├── i18n/                     # Internationalization
-│   │   ├── config.ts
-│   │   └── messages/
-│   │       ├── en.json
-│   │       └── fr.json
-│   ├── App.tsx                   # Main app with routing
-│   ├── main.tsx                  # Entry point
-│   └── index.css                 # Global styles
+│   ├── pages/                    # Pages
+│   │   ├── Dashboard.tsx         # Analytics overview
+│   │   ├── Journal.tsx           # Trade list
+│   │   ├── TradeNew.tsx          # Create trade
+│   │   ├── TradeDetail.tsx       # View/edit trade
+│   │   ├── Import.tsx            # BitGet CSV import
+│   │   ├── OpenOrders.tsx        # Position monitor
+│   │   ├── Calculator.tsx        # Trade calculator
+│   │   ├── Settings.tsx          # App settings
+│   │   ├── Help.tsx              # Help page
+│   │   └── Layout.tsx            # Navigation layout
+│   └── i18n/                     # Translations (EN / FR)
 │
-├── src-tauri/                    # Backend (Rust)
-│   ├── src/
-│   │   ├── commands/             # Tauri commands
-│   │   │   ├── trades.rs         # Trade operations
-│   │   │   └── settings.rs       # Settings operations
-│   │   ├── db/                   # Database layer
-│   │   │   ├── connection.rs     # SQLite connection
-│   │   │   └── schema.sql        # Database schema
-│   │   ├── models/               # Data models
-│   │   │   ├── trade.rs
-│   │   │   └── settings.rs
-│   │   └── lib.rs                # Main Rust entry
-│   ├── Cargo.toml                # Rust dependencies
-│   └── tauri.conf.json           # Tauri configuration
-│
-├── package.json
-├── vite.config.ts
-├── tailwind.config.ts
-└── tsconfig.json
+└── src-tauri/                    # Backend (Rust)
+    ├── src/
+    │   ├── commands/             # Tauri commands
+    │   │   ├── trades.rs         # Trade CRUD + soft delete
+    │   │   ├── settings.rs       # Settings
+    │   │   ├── import.rs         # CSV import, JSON backup/restore
+    │   │   ├── stats.rs          # Dashboard stats, equity curve
+    │   │   ├── api_sync.rs       # Exchange API credentials + sync
+    │   │   ├── live_mirror.rs    # Live position mirroring
+    │   │   ├── open_orders.rs    # Open orders fetching
+    │   │   ├── positions.rs      # Position fetching
+    │   │   ├── sync_scheduler.rs # Auto-sync scheduler
+    │   │   └── debug.rs          # Debug utilities
+    │   ├── db/                   # Database layer
+    │   │   ├── connection.rs     # SQLite connection
+    │   │   ├── migration_runner.rs
+    │   │   └── migrations/       # 9 versioned SQL migrations (000–009)
+    │   └── models/               # Data models (Trade, Settings, etc.)
+    └── Cargo.toml
 ```
 
-## 💾 Database
+---
 
-**Location**: `~/Library/Application Support/com.trading-journal.app/trading_journal.db`
+## Database
 
-**Schema**:
-- `settings` - Portfolio configuration (singleton)
-- `trades` - All trade records with full lifecycle data
-- `api_credentials` - Encrypted API credentials for exchange integration
-- `api_sync_history` - History of API synchronizations
-- `schema_migrations` - Database migration tracking
+**Location**:
+- macOS: `~/Library/Application Support/com.nemesis.trading-journal/trading_journal.db`
+- Windows: `%APPDATA%\com.nemesis.trading-journal\trading_journal.db`
+- Linux: `~/.local/share/com.nemesis.trading-journal/trading_journal.db`
 
-### Database Migrations
+**Tables**: `trades`, `settings`, `api_credentials`, `api_sync_history`, `schema_migrations`
 
-The app uses an automatic database migration system that:
-- ✅ **Automatically upgrades your database** when updating the app
-- ✅ **Creates backups before migrations** (stored in `backups/` folder)
-- ✅ **Preserves all your data** during updates
-- ✅ **Verifies migration integrity** with checksums
-- ✅ **Rolls back on failure** to protect your data
+### Migrations
 
-**Backups**: Located at `~/Library/Application Support/com.trading-journal.app/backups/`
-- Automatically created before schema changes
-- Last 5 backups are kept
-- Named: `pre_migration_v{version}_{timestamp}.db`
+The app uses an automatic migration system (9 migrations, 000–009):
+- Runs on startup, applies pending migrations in order
+- Creates a timestamped backup before any schema change
+- Keeps the last 5 backups
+- Handles duplicate column errors gracefully (safe to re-run)
+- Uses named column access throughout — resilient to schema evolution
 
-**For Developers**: See [docs/MIGRATIONS.md](docs/MIGRATIONS.md) for how to add new migrations.
+**Backups**: `~/Library/Application Support/com.nemesis.trading-journal/backups/`
 
-**For Users**: See [docs/MIGRATION_RECOVERY.md](docs/MIGRATION_RECOVERY.md) if you encounter migration issues.
+---
 
-The database is automatically created and initialized on first run.
+## Tech Stack
 
-## 🌐 API Layer
+| Layer | Technology |
+|-------|-----------|
+| Desktop framework | Tauri 2.x |
+| Frontend | React 19 + TypeScript |
+| Build tool | Vite |
+| Routing | React Router v6 |
+| Styling | Tailwind CSS + shadcn/ui |
+| Charts | Recharts |
+| i18n | i18next (EN/FR) |
+| Backend | Rust |
+| Database | SQLite via rusqlite |
+| Secrets | System keychain (via Tauri keyring plugin) |
 
-All database operations go through Tauri commands defined in `src/lib/api.ts`:
+---
 
-```typescript
-import { api } from './lib/api';
+## License
 
-// Get settings
-const settings = await api.getSettings();
-
-// Get all trades
-const trades = await api.getTrades();
-
-// Create trade
-const newTrade = await api.createTrade(tradeData);
-
-// Delete trade
-await api.deleteTrade(tradeId);
-```
-
-## 🎨 Styling
-
-Uses **Tailwind CSS** with the exact same configuration as the Next.js app. All shadcn/ui components are copied and styled identically.
-
-## 🌍 Internationalization
-
-Supports **English** and **French** via i18next. Language selection persists in localStorage.
-
-## 🔧 Tech Stack
-
-- **Tauri 2.x** - Desktop app framework
-- **React 19** - UI framework
-- **TypeScript** - Type safety
-- **Vite** - Build tool
-- **React Router v6** - Routing
-- **i18next** - i18n
-- **Tailwind CSS** - Styling
-- **shadcn/ui** - UI components
-- **Recharts** - Charts
-- **Rust** - Backend language
-- **SQLite** - Database (via rusqlite)
-
-## 🚀 Next Steps
-
-1. **Complete remaining Tauri commands** (update_trade, duplicate_trade, stats, import/export)
-2. **Finish Calculator page** (copy from Next.js and adapt)
-3. **Add Trade detail/edit pages**
-4. **Implement charts** (cumulative P&L, daily P&L)
-5. **Add native macOS features** (menu bar, system tray, notifications)
-
-## 📝 Notes
-
-- This is **version 1.0.0** - separate versioning from the web app
-- Database starts fresh (no automatic migration from web version)
-- Users can export from web → import to desktop via JSON backup/restore (once implemented)
-- All frontend code is reusable from the Next.js version with minimal changes
-
-## 🐛 Known Issues / Future Enhancements
-
-**Core Features:** All core functionality is working!
-
-**Nice-to-Have Features:**
-- Native menu bar (File, Edit, View, Window, Help menus)
-- System tray with live stats
-- Native macOS notifications for trade milestones
-- Pagination for large trade lists
-- Date range filters for analytics
-
-## 📄 License
-
-Same as the Next.js version.
+Private.
