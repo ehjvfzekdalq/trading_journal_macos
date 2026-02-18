@@ -308,6 +308,7 @@
     "actualPnL": "Actual P&L",
     "notClosed": "Not closed",
     "liveResults": "Live Results",
+    "tradeResults": "Trade Results",
     "tradeComplete": "✓ Trade complete",
     "vsPlanned": "vs Planned",
     "exceeded": "✓ Exceeded",

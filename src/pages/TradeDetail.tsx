@@ -727,6 +727,35 @@ export default function TradeDetail() {
         )}
       </div>
 
+      {/* Trade Results */}
+      {executionValid && executionMetrics && (
+        <Card className="border-2 border-primary">
+          <CardHeader className="bg-primary/10 pb-2 md:pb-3">
+            <CardTitle className="text-sm md:text-base">{t('tradeDetail.tradeResults') || 'Résultats du trade'}</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-3 md:pt-4">
+            {/* Single row: P&L and RR */}
+            <div className="grid grid-cols-2 gap-3 md:gap-4">
+              {/* P&L Realized */}
+              <div className="flex flex-col items-center justify-center p-2 md:p-3 bg-muted/50 rounded-lg">
+                <div className="text-xs text-muted-foreground mb-1">{t('tradeDetail.realizedPnL')}</div>
+                <div className={`text-lg md:text-2xl font-bold ${
+                  executionMetrics.realizedPnl >= 0 ? 'text-green-500' : 'text-red-500'
+                }`}>
+                  {formatCurrency(executionMetrics.realizedPnl)}
+                </div>
+              </div>
+
+              {/* Effective RR */}
+              <div className="flex flex-col items-center justify-center p-2 md:p-3 bg-muted/50 rounded-lg">
+                <div className="text-xs text-muted-foreground mb-1">{t('tradeDetail.effectiveRR')}</div>
+                <div className="text-lg md:text-2xl font-bold">{formatRR(executionMetrics.effectiveRR)}</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Two Column Layout */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Left Column: Trade Plan (Editable) */}
@@ -1173,7 +1202,9 @@ export default function TradeDetail() {
                   return totalFilled > 0 && (
                     <div className={cn(
                       "p-2 rounded text-xs text-center",
-                      totalFilled === 100 ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"
+                      totalFilled === 100
+                        ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                        : "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
                     )}>
                       Position Filled: {totalFilled.toFixed(1)}%
                     </div>
@@ -1290,7 +1321,7 @@ export default function TradeDetail() {
                     ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
                     : "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
                 )}>
-                  {t('tradeDetail.totalPositionClosed')}: {totalExitPercent.toFixed(1)}%
+                  {t('tradeDetail.totalPositionClosed')} {totalExitPercent.toFixed(1)}%
                 </div>
               )}
 
@@ -1309,57 +1340,6 @@ export default function TradeDetail() {
               </div>
             </CardContent>
           </Card>
-
-          {/* Live Results Preview */}
-          {executionValid && executionMetrics && (
-            <Card className="border-2 border-primary">
-              <CardHeader className="bg-primary/10">
-                <CardTitle className="text-lg">{t('tradeDetail.liveResults')}</CardTitle>
-              </CardHeader>
-              <CardContent className="pt-6 space-y-4">
-                <div className="grid gap-4 grid-cols-2">
-                  <div className="text-center p-4 bg-muted/50 rounded-lg">
-                    <div className="text-xs text-muted-foreground mb-1">{t('tradeDetail.realizedPnL')}</div>
-                    <div className={`text-3xl font-bold ${
-                      executionMetrics.realizedPnl >= 0 ? 'text-green-500' : 'text-red-500'
-                    }`}>
-                      {formatCurrency(executionMetrics.realizedPnl)}
-                    </div>
-                  </div>
-                  <div className="text-center p-4 bg-muted/50 rounded-lg">
-                    <div className="text-xs text-muted-foreground mb-1">{t('tradeDetail.totalPnLIfComplete')}</div>
-                    <div className={`text-3xl font-bold ${
-                      executionMetrics.totalPnl >= 0 ? 'text-green-500' : 'text-red-500'
-                    }`}>
-                      {formatCurrency(executionMetrics.totalPnl)}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="p-4 bg-muted/50 rounded-lg">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="text-xs text-muted-foreground">{t('tradeDetail.effectiveRR')}</div>
-                      <div className="text-2xl font-bold">{formatRR(executionMetrics.effectiveRR)}</div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-xs text-muted-foreground">{t('tradeDetail.vsPlanned')}</div>
-                      <div className={`text-lg font-semibold ${
-                        executionMetrics.effectiveRR >= trade.planned_weighted_rr
-                          ? 'text-green-500'
-                          : 'text-yellow-500'
-                      }`}>
-                        {executionMetrics.effectiveRR >= trade.planned_weighted_rr
-                          ? `✓ ${t('tradeDetail.exceeded')}`
-                          : `△ ${t('tradeDetail.belowPlan')}`
-                        }
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
         </div>
       </div>
 
