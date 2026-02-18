@@ -45,7 +45,7 @@ export function SyncPreview({ trades }: SyncPreviewProps) {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-green-600" />
+              <CheckCircle2 className="h-4 w-4 text-success" />
               {t('api.newTrades')}
             </CardTitle>
           </CardHeader>
@@ -85,7 +85,7 @@ export function SyncPreview({ trades }: SyncPreviewProps) {
                       )}
                     </div>
                     <div className="text-right">
-                      <div className={`font-medium ${trade.pnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      <div className={`font-medium ${trade.pnl >= 0 ? 'text-success' : 'text-destructive'}`}>
                         {formatPrice(trade.pnl)}
                       </div>
                       <div className="text-xs text-muted-foreground">

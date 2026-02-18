@@ -182,8 +182,8 @@ export function ExchangeDialog({ open, onOpenChange, onSaved }: ExchangeDialogPr
 
           {testResult === 'success' && (
             <Alert>
-              <CheckCircle2 className="h-4 w-4 text-green-600" />
-              <AlertDescription className="text-green-600">
+              <CheckCircle2 className="h-4 w-4 text-success" />
+              <AlertDescription className="text-success">
                 {t('api.credentialsValid')}
               </AlertDescription>
             </Alert>

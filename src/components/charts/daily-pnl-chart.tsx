@@ -2,6 +2,7 @@
 
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, Cell } from 'recharts';
 import { formatCurrency } from '@/lib/utils';
+import { PROFIT_COLOR, LOSS_COLOR } from '@/lib/colors';
 
 interface DailyPnLChartProps {
   data: Array<{
@@ -59,7 +60,7 @@ export function DailyPnLChart({ data }: DailyPnLChartProps) {
         />
         <Bar dataKey="pnl" radius={[4, 4, 0, 0]}>
           {data.map((entry, index) => (
-            <Cell key={`cell-${index}`} fill={entry.pnl >= 0 ? '#10b981' : '#ef4444'} />
+            <Cell key={`cell-${index}`} fill={entry.pnl >= 0 ? PROFIT_COLOR : LOSS_COLOR} />
           ))}
         </Bar>
       </BarChart>

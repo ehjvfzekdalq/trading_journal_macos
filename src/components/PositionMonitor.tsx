@@ -78,7 +78,7 @@ export function PositionMonitor() {
   };
 
   const getLiquidationWarningColor = (distancePercent: number) => {
-    if (distancePercent < 5) return 'text-red-600 dark:text-red-400';
+    if (distancePercent < 5) return 'text-destructive';
     if (distancePercent < 10) return 'text-orange-600 dark:text-orange-400';
     if (distancePercent < 20) return 'text-yellow-600 dark:text-yellow-400';
     return 'text-muted-foreground';

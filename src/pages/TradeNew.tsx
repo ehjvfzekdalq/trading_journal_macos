@@ -563,7 +563,7 @@ export default function TradeNew() {
                     return validEntries.length > 0 && (
                       <div className={cn(
                         "p-3 rounded-lg border",
-                        isValid ? "bg-green-50 border-green-500/50" : "bg-yellow-50 border-yellow-500/50"
+                        isValid ? "bg-success/5 border-success/50" : "bg-yellow-50 border-yellow-500/50"
                       )}>
                         <div className="text-xs text-muted-foreground mb-1">
                           Total Allocation: {totalPercent.toFixed(1)}%
@@ -907,7 +907,7 @@ export default function TradeNew() {
                   return totalFilled > 0 && (
                     <div className={cn(
                       "p-2 rounded text-xs text-center",
-                      totalFilled === 100 ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"
+                      totalFilled === 100 ? "bg-success/10 text-success" : "bg-yellow-100 text-yellow-700"
                     )}>
                       Position Filled: {totalFilled.toFixed(1)}%
                     </div>

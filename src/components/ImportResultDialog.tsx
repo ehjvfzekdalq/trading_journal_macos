@@ -47,12 +47,12 @@ export function ImportResultDialog({
           <DialogTitle className="flex items-center gap-2">
             {isSuccess ? (
               <>
-                <CheckCircle2 className="h-5 w-5 text-green-600" />
+                <CheckCircle2 className="h-5 w-5 text-success" />
                 {t('importResult.successTitle')}
               </>
             ) : isDelete ? (
               <>
-                <CheckCircle2 className="h-5 w-5 text-green-600" />
+                <CheckCircle2 className="h-5 w-5 text-success" />
                 {t('importResult.deletedTitle')}
               </>
             ) : hasNoChanges ? (
@@ -67,7 +67,7 @@ export function ImportResultDialog({
               </>
             ) : (
               <>
-                <CheckCircle2 className="h-5 w-5 text-green-600" />
+                <CheckCircle2 className="h-5 w-5 text-success" />
                 {t('importResult.completedTitle')}
               </>
             )}
@@ -85,13 +85,13 @@ export function ImportResultDialog({
           {isDelete ? (
             <div className="text-center">
               <p className="text-muted-foreground">{t('importResult.deleted')}</p>
-              <p className="text-3xl font-bold text-green-600">{result.duplicates}</p>
+              <p className="text-3xl font-bold text-success">{result.duplicates}</p>
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <p className="text-muted-foreground">{t('importResult.imported')}</p>
-                <p className="text-2xl font-bold text-green-600">{result.imported}</p>
+                <p className="text-2xl font-bold text-success">{result.imported}</p>
               </div>
               <div>
                 <p className="text-muted-foreground">{t('importResult.duplicatesSkipped')}</p>

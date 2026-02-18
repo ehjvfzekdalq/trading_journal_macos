@@ -1,5 +1,7 @@
 'use client';
 
+import { PROFIT_COLOR, LOSS_COLOR } from '@/lib/colors';
+
 export function CircularProgress({
   value,
   size = 80,
@@ -17,9 +19,9 @@ export function CircularProgress({
 
   // Color based on value
   const getColor = () => {
-    if (value >= 60) return '#10b981'; // green
+    if (value >= 60) return PROFIT_COLOR;
     if (value >= 40) return '#f59e0b'; // orange
-    return '#ef4444'; // red
+    return LOSS_COLOR;
   };
 
   return (

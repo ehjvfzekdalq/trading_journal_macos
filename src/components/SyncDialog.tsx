@@ -103,7 +103,7 @@ export function SyncDialog({
               <DialogTitle className="flex items-center gap-2">
                 {isSuccess ? (
                   <>
-                    <CheckCircle2 className="h-5 w-5 text-green-600" />
+                    <CheckCircle2 className="h-5 w-5 text-success" />
                     {t('api.syncDialog.successTitle')}
                   </>
                 ) : (
@@ -119,7 +119,7 @@ export function SyncDialog({
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <p className="text-muted-foreground">{t('api.syncDialog.imported')}</p>
-                  <p className="text-2xl font-bold text-green-600">{result.imported}</p>
+                  <p className="text-2xl font-bold text-success">{result.imported}</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">{t('api.syncDialog.duplicatesSkipped')}</p>
@@ -131,7 +131,7 @@ export function SyncDialog({
                 <p className="text-muted-foreground text-sm">{t('api.syncDialog.totalPnL')}</p>
                 <p
                   className={`text-2xl font-bold ${
-                    (result.total_pnl || 0) >= 0 ? 'text-green-600' : 'text-red-600'
+                    (result.total_pnl || 0) >= 0 ? 'text-success' : 'text-destructive'
                   }`}
                 >
                   ${result.total_pnl?.toFixed(2) || '0.00'}

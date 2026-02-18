@@ -50,7 +50,7 @@ export default function Help() {
       id: 'calculator' as Section,
       icon: CalculatorIcon,
       title: t('help.calculatorHelp'),
-      color: 'text-green-500',
+      color: 'text-success',
       content: [
         { title: t('help.calculatorTitle'), text: t('help.calculatorContent') },
         { title: t('help.calculatorStep1'), text: t('help.calculatorStep1Content'), pre: true },
@@ -205,9 +205,9 @@ export default function Help() {
       </div>
 
       {/* Privacy Note */}
-      <Card className="border-green-500/50 bg-green-500/5">
+      <Card className="border-success/50 bg-success/5">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-green-600 dark:text-green-400">
+          <CardTitle className="flex items-center gap-2 text-success">
             <Lock className="h-5 w-5" />
             {t('help.privacyNote')}
           </CardTitle>

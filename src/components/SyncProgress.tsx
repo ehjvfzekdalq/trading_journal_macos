@@ -32,8 +32,8 @@ export function SyncProgress({ status, current = 0, total = 100, message }: Sync
           )}
           {status === 'success' && (
             <>
-              <CheckCircle2 className="h-4 w-4 text-green-600" />
-              <span className="text-sm font-medium text-green-600">{t('api.syncComplete')}</span>
+              <CheckCircle2 className="h-4 w-4 text-success" />
+              <span className="text-sm font-medium text-success">{t('api.syncComplete')}</span>
             </>
           )}
           {status === 'error' && (

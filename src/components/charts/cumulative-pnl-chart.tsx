@@ -2,6 +2,7 @@
 
 import { ComposedChart, Area, Line, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, ReferenceLine } from 'recharts';
 import { formatCurrency } from '@/lib/utils';
+import { PROFIT_COLOR, LOSS_COLOR } from '@/lib/colors';
 
 interface CumulativePnLChartProps {
   data: Array<{
@@ -72,12 +73,12 @@ export function CumulativePnLChart({ data }: CumulativePnLChartProps) {
       <ComposedChart data={chartData}>
         <defs>
           <linearGradient id="positiveGradient" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
-            <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+            <stop offset="5%" stopColor={PROFIT_COLOR} stopOpacity={0.3} />
+            <stop offset="95%" stopColor={PROFIT_COLOR} stopOpacity={0} />
           </linearGradient>
           <linearGradient id="negativeGradient" x1="0" y1="1" x2="0" y2="0">
-            <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3} />
-            <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
+            <stop offset="5%" stopColor={LOSS_COLOR} stopOpacity={0.3} />
+            <stop offset="95%" stopColor={LOSS_COLOR} stopOpacity={0} />
           </linearGradient>
         </defs>
         <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
@@ -142,7 +143,7 @@ export function CumulativePnLChart({ data }: CumulativePnLChartProps) {
         <Line
           type="monotone"
           dataKey="positiveStroke"
-          stroke="#10b981"
+          stroke={PROFIT_COLOR}
           strokeWidth={2}
           dot={false}
           connectNulls={false}
@@ -152,7 +153,7 @@ export function CumulativePnLChart({ data }: CumulativePnLChartProps) {
         <Line
           type="monotone"
           dataKey="negativeStroke"
-          stroke="#ef4444"
+          stroke={LOSS_COLOR}
           strokeWidth={2}
           dot={false}
           connectNulls={false}

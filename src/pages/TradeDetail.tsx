@@ -690,11 +690,11 @@ export default function TradeDetail() {
               <div>
                 <p className="text-[10px] md:text-xs text-muted-foreground font-semibold">Plan</p>
                 <p className="text-lg md:text-2xl font-bold">{formatRR(trade.planned_weighted_rr)}</p>
-                <p className="text-[10px] md:text-xs text-green-600 font-semibold">
+                <p className="text-[10px] md:text-xs text-success font-semibold">
                   {formatCurrency(trade.one_r * trade.planned_weighted_rr)}
                 </p>
               </div>
-              <TrendingUp className="h-5 w-5 md:h-8 md:w-8 text-green-500 hidden md:block" />
+              <TrendingUp className="h-5 w-5 md:h-8 md:w-8 text-success hidden md:block" />
             </div>
           </CardContent>
         </Card>
@@ -711,15 +711,15 @@ export default function TradeDetail() {
                   </p>
                   <p className={`text-[10px] md:text-xs font-semibold ${
                     trade.total_pnl
-                      ? (trade.total_pnl >= 0 ? 'text-green-600' : 'text-red-600')
+                      ? (trade.total_pnl >= 0 ? 'text-success' : 'text-destructive')
                       : 'text-muted-foreground'
                   }`}>
                     {trade.total_pnl ? formatCurrency(trade.total_pnl) : '-'}
                   </p>
                 </div>
                 {trade.total_pnl !== null && (trade.total_pnl >= 0 ?
-                  <TrendingUp className="h-5 w-5 md:h-8 md:w-8 text-green-500 hidden md:block" /> :
-                  <TrendingDown className="h-5 w-5 md:h-8 md:w-8 text-red-500 hidden md:block" />
+                  <TrendingUp className="h-5 w-5 md:h-8 md:w-8 text-success hidden md:block" /> :
+                  <TrendingDown className="h-5 w-5 md:h-8 md:w-8 text-destructive hidden md:block" />
                 )}
               </div>
             </CardContent>
@@ -740,7 +740,7 @@ export default function TradeDetail() {
               <div className="flex flex-col items-center justify-center p-2 md:p-3 bg-muted/50 rounded-lg">
                 <div className="text-xs text-muted-foreground mb-1">{t('tradeDetail.realizedPnL')}</div>
                 <div className={`text-lg md:text-2xl font-bold ${
-                  executionMetrics.realizedPnl >= 0 ? 'text-green-500' : 'text-red-500'
+                  executionMetrics.realizedPnl >= 0 ? 'text-success' : 'text-destructive'
                 }`}>
                   {formatCurrency(executionMetrics.realizedPnl)}
                 </div>
@@ -756,9 +756,9 @@ export default function TradeDetail() {
         </Card>
       )}
 
-      {/* Two Column Layout */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Left Column: Trade Plan (Editable) */}
+      {/* Stacked Layout */}
+      <div className="grid gap-6">
+        {/* Trade Plan (Editable) */}
         <div className="space-y-6">
           <Card>
             <CardHeader className="bg-muted/50">
@@ -779,31 +779,34 @@ export default function TradeDetail() {
             </CardHeader>
             <CardContent className={cn("space-y-4 pt-6", isPlanCollapsed && "hidden md:block")}>
               {/* Dates - Editable */}
-              <div className="grid gap-3 grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="analysisDate" className="text-xs">{t('tradeDetail.analysisDate')}</Label>
-                  <Input
-                    id="analysisDate"
-                    type="date"
-                    value={analysisDate}
-                    onChange={(e) => setAnalysisDate(e.target.value)}
-                    className="text-sm"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="tradeDate" className="text-xs">{t('tradeDetail.tradeDate')}</Label>
-                  <Input
-                    id="tradeDate"
-                    type="date"
-                    value={tradeDate}
-                    onChange={(e) => setTradeDate(e.target.value)}
-                    className="text-sm"
-                  />
+              <div className="border-2 border-violet-500 rounded-lg p-4">
+                <div className="text-sm font-semibold text-violet-600 mb-3">{t('tradeDetail.dates') || 'Dates'}</div>
+                <div className="grid gap-3 grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="analysisDate" className="text-xs">{t('tradeDetail.analysisDate')}</Label>
+                    <Input
+                      id="analysisDate"
+                      type="date"
+                      value={analysisDate}
+                      onChange={(e) => setAnalysisDate(e.target.value)}
+                      className="text-sm"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="tradeDate" className="text-xs">{t('tradeDetail.tradeDate')}</Label>
+                    <Input
+                      id="tradeDate"
+                      type="date"
+                      value={tradeDate}
+                      onChange={(e) => setTradeDate(e.target.value)}
+                      className="text-sm"
+                    />
+                  </div>
                 </div>
               </div>
 
               {/* Position Metrics Editor - Plan Section */}
-              <div className="pt-3 border-t">
+              <div className="border-2 border-violet-500 rounded-lg p-4">
                 <PositionMetricsEditor
                   entryPrice={(() => {
                     const validEntries = plannedEntries.filter(e => e.price > 0 && e.percent > 0);
@@ -834,9 +837,9 @@ export default function TradeDetail() {
               </div>
 
               {/* Planned Entries (Multi-PE) - Editable */}
-              <div className="space-y-3 pt-3 border-t">
+              <div className="border-2 border-violet-500 rounded-lg p-4 space-y-3">
                 <div className="flex items-center justify-between">
-                  <Label className="text-sm font-semibold">
+                  <Label className="text-sm font-semibold text-violet-600">
                     {t('tradeDetail.plannedEntries') || 'Planned Entries'}
                   </Label>
                   <Button
@@ -916,9 +919,11 @@ export default function TradeDetail() {
               </div>
 
               {/* Stop Loss & Leverage - Editable */}
-              <div className="grid gap-3 grid-cols-2 pt-3">
-                <div className="space-y-2">
-                  <Label htmlFor="plannedSl" className="text-xs">{t('tradeNew.stopLossRequired')}</Label>
+              <div className="border-2 border-violet-500 rounded-lg p-4">
+                <div className="text-sm font-semibold text-violet-600 mb-3">{t('tradeDetail.stopLossAndLeverage') || 'Stop Loss & Leverage'}</div>
+                <div className="grid gap-3 grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="plannedSl" className="text-xs">{t('tradeNew.stopLossRequired')}</Label>
                   <Input
                     id="plannedSl"
                     type="number"
@@ -946,11 +951,12 @@ export default function TradeDetail() {
                     className="text-sm"
                   />
                 </div>
+                </div>
               </div>
 
               {/* Take Profits - Editable */}
-              <div className="space-y-3 pt-3 border-t">
-                <div className="text-sm font-semibold">{t('tradeDetail.plannedTakeProfits')}</div>
+              <div className="border-2 border-violet-500 rounded-lg p-4 space-y-3">
+                <div className="text-sm font-semibold text-violet-600">{t('tradeDetail.plannedTakeProfits')}</div>
                 {plannedTps.map((tp, index) => (
                   <div key={index} className="grid gap-3 grid-cols-2">
                     <div className="space-y-1">
@@ -1005,8 +1011,8 @@ export default function TradeDetail() {
               </div>
 
               {/* Position Details */}
-              <div className="pt-3 border-t space-y-2">
-                <div className="text-sm font-semibold mb-3">{t('calculator.position')}</div>
+              <div className="border-2 border-violet-500 rounded-lg p-4 space-y-2">
+                <div className="text-sm font-semibold text-violet-600 mb-3">{t('calculator.position')}</div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="p-2 bg-muted/50 rounded">
                     <div className="text-xs text-muted-foreground">{t('tradeDetail.positionSize')}</div>
@@ -1030,7 +1036,7 @@ export default function TradeDetail() {
           </Card>
         </div>
 
-        {/* Right Column: Execution (Editable) */}
+        {/* Trade Execution (Editable) */}
         <div className="space-y-6">
           <Card>
             <CardHeader className="bg-primary/5">
@@ -1203,7 +1209,7 @@ export default function TradeDetail() {
                     <div className={cn(
                       "p-2 rounded text-xs text-center",
                       totalFilled === 100
-                        ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                        ? "bg-success/10 text-success"
                         : "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
                     )}>
                       Position Filled: {totalFilled.toFixed(1)}%
@@ -1316,9 +1322,9 @@ export default function TradeDetail() {
                 <div className={cn(
                   "p-2 rounded text-xs text-center",
                   Math.abs(totalExitPercent - 100) <= 0.1
-                    ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                    ? "bg-success/10 text-success"
                     : totalExitPercent > 100
-                    ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                    ? "bg-destructive/10 text-destructive"
                     : "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
                 )}>
                   {t('tradeDetail.totalPositionClosed')} {totalExitPercent.toFixed(1)}%
