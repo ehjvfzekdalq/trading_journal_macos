@@ -153,7 +153,7 @@ pub async fn import_bitget_csv(
 
                     let exits = serde_json::json!([{
                         "price": trade_data.exit_price,
-                        "percent": 1.0
+                        "percent": 100.0
                     }])
                     .to_string();
 
@@ -582,13 +582,13 @@ fn finalize_blofin_position(pos: OpenBlofinPosition) -> BlofinPositionData {
         })
         .collect();
 
-    // exits: [{price, percent}] where percent is fraction 0-1
+    // exits: [{price, percent}] where percent is 0-100
     let exits: Vec<serde_json::Value> = pos
         .exit_orders
         .iter()
         .map(|(price, qty)| {
             let pct = if pos.entry_qty > 0.0 {
-                qty / pos.entry_qty
+                qty / pos.entry_qty * 100.0
             } else {
                 0.0
             };
@@ -905,8 +905,14 @@ fn bingx_pair_to_standard(pair: &str) -> String {
 }
 
 fn normalize_bingx_time(s: &str) -> String {
-    // Accepts "2025/11/21 02:19:06" or "2025-11-21 02:19:06" → canonical form
-    s.replace('/', "-")
+    // Handle ISO 8601 with timezone offset: "2026-02-06T00:24:54.000+08:00"
+    // Parse as RFC3339 and convert to UTC "YYYY-MM-DD HH:MM:SS"
+    let s = s.replace('/', "-");
+    if let Ok(dt) = chrono::DateTime::parse_from_rfc3339(&s) {
+        return dt.with_timezone(&chrono::Utc).format("%Y-%m-%d %H:%M:%S").to_string();
+    }
+    // Already in "YYYY-MM-DD HH:MM:SS" format — return as-is
+    s
 }
 
 fn parse_bingx_row(row: &[Data]) -> Result<BingxOrder, String> {
@@ -1049,7 +1055,7 @@ fn finalize_bingx_position(pos: OpenBingxPosition) -> BingxPositionData {
     }).collect();
 
     let exits: Vec<serde_json::Value> = pos.exit_orders.iter().map(|(price, qty)| {
-        let pct = if pos.entry_qty > 0.0 { qty / pos.entry_qty } else { 0.0 };
+        let pct = if pos.entry_qty > 0.0 { qty / pos.entry_qty * 100.0 } else { 0.0 };
         serde_json::json!({"price": price, "percent": pct})
     }).collect();
 
